@@ -12,7 +12,7 @@ import { useEffect, useRef } from "react";
 // ─────────────────────────────────────────────────────────────────────
 
 function HomeHero({ hero }) {
-  const { positioning, colophonLead, colophon } = hero;
+  const { positioning, colophonLead, colophon, colophonSecond } = hero;
 
   return (
     <section className="home-hero" aria-label="Lattice">
@@ -20,10 +20,15 @@ function HomeHero({ hero }) {
 
       {colophon ? (
         <p className="home-hero-colophon">
-          {colophonLead ? (
-            <span className="home-hero-colophon-lead">{colophonLead}</span>
+          <span className="home-hero-colophon-line">
+            {colophonLead ? (
+              <span className="home-hero-colophon-lead">{colophonLead}</span>
+            ) : null}
+            <span className="home-hero-colophon-body">{colophon}</span>
+          </span>
+          {colophonSecond ? (
+            <span className="home-hero-colophon-line">{colophonSecond}</span>
           ) : null}
-          <span className="home-hero-colophon-body">{colophon}</span>
         </p>
       ) : null}
     </section>

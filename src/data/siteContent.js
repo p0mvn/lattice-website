@@ -43,8 +43,8 @@ export const pages = {
       // that width; a materially longer string overflows the column.
       positioning: "Blockchains, built to scale.",
       colophonLead: "Lattice LLC",
-      colophon:
-        " is the protocol engineering practice of Roman Akhtariev - building core infrastructure across Zcash and Cosmos.",
+      colophon: " is the protocol engineering practice of Roman Akhtariev.",
+      colophonSecond: "Building core infrastructure across Zcash and Cosmos.",
     },
   },
   about: {

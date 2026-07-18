@@ -943,23 +943,15 @@
      ───────────────────────────────────────────────────────────────── */
 
   .home-section {
-    /* Hero+card block vertically centered in the section.
-       Top and bottom paddings match (both 64px = at the top/bottom
-       horizontal guide positions), and the lane uses justify-content:
-       center to position the content block at the midpoint of the
-       remaining height. Visible result: equal whitespace above hero
-       and below card. */
+    /* Hero block vertically centered in the section. Top and bottom
+       paddings match (both 64px = at the top/bottom horizontal guide
+       positions), and the lane uses justify-content: center to place
+       the hero at the midpoint of the remaining height. */
     padding-top: 64px;
     padding-bottom: 64px;
   }
 
-  /* Hero + margin rails stack above the WebGL layer. Margin rails
-     already declared z-index: 2; here we lift the content lane and
-     vertically center its content (hero + freedom-money card) within
-     the section so the pair sits as one frontispiece block instead of
-     pinning to the top.
-
-     The lane spans from the 2nd guide (sidebar-seam) to the 5th
+  /* The lane spans from the 2nd guide (sidebar-seam) to the 5th
      visible guide (right-inner — outermost right vertical, which sits
      at frame-margin from the right edge). With the 3rd and 4th stems
      hidden on home, right-inner is the rightmost vertical, so the
@@ -973,48 +965,33 @@
      flex-shrink: 0 is critical — .home-section is a row-flex with the
      standard content-width container (786px). Without flex-shrink: 0
      the flex engine squashes the lane back to 786px to fit its parent,
-     and the card centers in the wrong rectangle. */
+     and the hero centers in the wrong rectangle. */
   .home-lane {
     position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    /* Hero stays anchored at the top (flex-start). The freedom-money
-       card is absolutely positioned to the viewport bottom — out of
-       this flex flow entirely. See .home-hero-cards. */
-    justify-content: flex-start;
+    /* The hero is the lane's only content — center it vertically in
+       the single-viewport section so it sits at the midpoint of the
+       page rather than pinning to the top guide. */
+    justify-content: center;
     margin-left: calc(-1 * var(--content-offset));
     width: calc(var(--content-width) + 2 * var(--content-offset));
     max-width: calc(var(--content-width) + 2 * var(--content-offset));
   }
 
-  /* On the home page, lift the margin guides above the backdrop so
-     the manuscript ruling reads through the photograph. Default
-     z-index: 0 puts guides below the home-lane (z-index: 1), which
-     contains the backdrop — without this override, the backdrop
-     covers the guides. */
   .page-frame-home .margin-rules {
     z-index: 2;
   }
 
-  /* Lift hero + card above the backdrop. Both already live inside
-     the home-lane (which is the backdrop's stacking context); a
-     small z-index on each pulls them above the backdrop's z-index: 0. */
   .home-hero {
     position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
     gap: 32px;
-    /* No horizontal padding — hero h1 sits flush at the content-lane
-       left edge so it shares a left baseline with the landscape card
-       below. Inner padding was breaking that alignment. */
     padding: 0;
-    /* Drop the hero so its top aligns with the V logo. V logo top =
-       sidebar-rail padding-top (128px); home-section padding-top is
-       64px (top horizontal guide). Difference = 64px. */
-    margin-top: 64px;
   }
 
   /* Illumination — halftone plate at the top of the hero. Treated as a
@@ -1049,28 +1026,19 @@
      frontispiece, not a section title. Stays in serif Martina, ink
      color, with the letterpress shadow inherited from h1. */
   .home-hero-positioning {
-    /* Optical top-alignment with the V logo. The hero block's top edge
-       already lands at 128px (64px section padding + 64px hero margin),
-       matching the logo's padding-top — but a glyph's cap line starts
-       ~0.18em below its line box, so the caption rendered visibly lower
-       than the V. The negative em margin lifts the cap line itself to
-       the logo's top edge, and scales with the clamp()ed font size. */
+    /* Optical lift — a glyph's cap line starts ~0.18em below its line
+       box; the negative em margin keeps the vertically-centered hero
+       from reading as sagging, and scales with the clamp()ed size. */
     margin: -0.18em 0 0;
     font-family: var(--font-serif);
-    /* Title-plate scale — 28px floor / 88px ceiling. The previous
-       140px ceiling competed with the engraving for protagonist;
-       this scale keeps the hero commanding without dominating the
-       illustration. text-wrap: balance handles multi-line wraps if
-       the headline ever needs to break (localized copy, etc.). */
-    /* Sized as if set within the 3rd–4th vertical margins (the 786px
-       content column of /work) even though home hides those guides:
-       the caption renders ~11.1em wide, so a 68px ceiling keeps it
-       ~755px — inside the phantom column with a little air — where the
-       old 76px ceiling overshot it (~845px). Preferred returns to the
-       documented 4.5vw DISPLAY tier, which tracks the shrinking column
-       through the mid range (e.g. ~58px → ~648px wide at 1300px, where
-       the column is ~646px). Floor 36px unchanged. */
-    font-size: clamp(36px, 4.5vw, 68px);
+    /* The headline is the landing's sole protagonist — no backdrop or
+       margin cards compete with it (that was the Valar composition
+       this 68px ceiling was tuned for). 5.5vw tracks the viewport
+       through the mid range; the 96px ceiling renders the ~10.7em
+       caption ~1027px wide, still inside the 1232px lane on the
+       1440 frame. nowrap holds the single-line composition; the
+       ≤1180 and mobile tiers below take over wrapping. */
+    font-size: clamp(40px, 5.5vw, 96px);
     font-weight: 400;
     letter-spacing: -0.034em;
     line-height: 1.05;
@@ -1081,16 +1049,17 @@
     text-shadow: none;
   }
 
-  /* Colophon — the supporting beat. "Freedom money is…" sits below the
-     positioning, smaller, in the editorial parchment-78 register. The
-     lead phrase ("Freedom money") is italicized in the same serif so
-     the term reads as a definition entry, not just sentence kickoff. */
+  /* Colophon — the supporting beat. Centers under the headline at
+     ~1/4 of its size, in the editorial parchment-85 register. The
+     lead phrase ("Lattice LLC") is italicized in the same serif so
+     the name reads as a defined term, not just sentence kickoff. */
   .home-hero-colophon {
-    max-width: 620px;
-    margin: 0;
+    max-width: 30em;
+    margin: 0 auto;
+    text-align: center;
     color: var(--parchment-85);
     font-family: var(--font-serif);
-    font-size: 20px;
+    font-size: clamp(18px, 1.35vw, 24px);
     font-style: normal;
     font-weight: 400;
     letter-spacing: -0.005em;
@@ -1100,6 +1069,12 @@
   .home-hero-colophon-lead {
     color: var(--ink);
     font-style: italic;
+  }
+
+  /* Each colophon sentence is its own line — a two-beat cadence
+     (practice statement, then the work) rather than flowing prose. */
+  .home-hero-colophon-line {
+    display: block;
   }
 
   .home-hero-colophon-body {
