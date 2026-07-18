@@ -3,8 +3,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  // Project Pages site serves from https://p0mvn.github.io/lattice-website/ —
-  // all built asset URLs must carry the repo prefix.
-  base: "/lattice-website/",
+  // Served from the apex custom domain (latticepq.com) — assets resolve
+  // from the domain root. The router's stripBase/withBase helpers
+  // no-op when the base is "/".
+  base: "/",
   plugins: [react(), tailwindcss()],
 });
