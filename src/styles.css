@@ -1,0 +1,4833 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap");
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Martina Plantijn";
+  src: url("./assets/fonts/martina-plantijn-light.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@theme {
+  --color-vellum: #0a0a0a;
+  --color-cream: #f5f5f5;
+  --color-parchment: #a3a3a3;
+  --color-rule: rgba(163, 163, 163, 0.2);
+  --color-rule-strong: rgba(163, 163, 163, 0.42);
+  --color-rule-plus: rgba(163, 163, 163, 0.33);
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-serif: "Martina Plantijn", "Test Martina Plantijn", Georgia, serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--vellum);
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--vellum);
+    font-family: var(--font-sans);
+  }
+
+  body.menu-open {
+    overflow: hidden;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .error-fallback {
+    display: grid;
+    min-height: 100vh;
+    place-content: center;
+    gap: 16px;
+    background: var(--vellum);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    text-align: center;
+  }
+
+  .error-fallback-mark {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    letter-spacing: 0.08em;
+  }
+}
+
+@layer components {
+  /* ─────────────────────────────────────────────────────────────────
+     TYPOGRAPHY SYSTEM — clamp() vw tiers
+     ─────────────────────────────────────────────────────────────────
+     The site uses six standard responsive multipliers. When adding
+     a new clamp() rule, pick from these — don't invent a new vw
+     value unless the element genuinely needs different scaling
+     behavior than every existing tier.
+
+     DESKTOP/RESPONSIVE TIERS:
+       4.5vw — DISPLAY: hero positioning, capacity numerals, large
+                        protagonist type. Floor 36-48px, ceiling
+                        68-88px. Used by .home-hero-positioning,
+                        .capacity-card-number.
+       7vw   — TABLET HERO (≤1180px only): home-hero-positioning's
+                        two-line tablet composition. Ceiling 68px —
+                        matches the DISPLAY ceiling so a tablet never
+                        renders a larger headline than desktop.
+       4.4vw — CARD-DISPLAY: card-protagonist type (slightly tighter
+                             scaling). Used by .home-margin-card-title.
+       1.8vw — SUBHEAD: secondary display, table headers. Floor
+                        18-22px. Used by .work-roadmap-cell h2.
+       1.1vw — CAPTION: metadata, IPA, small contextual text.
+                        Floor 13-15px. Used by
+                        .home-margin-card-pronunciation.
+
+     MOBILE-ONLY TIERS (below 767px breakpoint):
+       9vw   — MOBILE MEGA: mobile menu wordmark + nav links.
+       6vw   — MOBILE DISPLAY: mobile section headers, card titles.
+       8.5vw — MOBILE HERO: home-hero-positioning (raised from 6.5vw
+                            so the two-line headline owns the narrow
+                            viewport; see the rule's own comment).
+
+     If you need a new element to scale, pick the tier whose content
+     matches yours — adjust only the floor/ceiling for size needs.
+     ───────────────────────────────────────────────────────────── */
+
+  /* ─────────────────────────────────────────────────────────────────
+   * LATTICE BRAND COLOR SYSTEM
+   *
+   * Monochrome. The Valar manuscript palette (warm vellum, parchment,
+   * lapis, gold) was replaced wholesale with a grayscale ramp — the
+   * "lattice" identity is structural, not illuminated: black ground,
+   * white ink, gray rules, and a diagonal lattice grid for texture.
+   *
+   * Token NAMES are kept from the Valar system (so the dozens of
+   * usages across this file didn't need to move); only the values
+   * changed. Read them by role, not by name:
+   *
+   *   INK (#f5f5f5)            — primary content. Titles, body, names,
+   *                              destinations. The brightest thing on
+   *                              the page, always.
+   *
+   *   PARCHMENT family         — now a neutral GRAY ramp
+   *                              (--parchment-rgb: 163,163,163).
+   *                              Supporting structure: metadata, rules,
+   *                              demoted text, graduated by opacity
+   *                              (see tier doc below).
+   *
+   *   LAPIS (#e8e8e8)          — the "signal" tone: links, data points,
+   *                              active-section + scroll-position marks.
+   *                              Near-white, a step below ink.
+   *
+   *   GOLD (#ffffff)           — activation feedback. Hover, focus,
+   *                              active. Pure white: never at rest in
+   *                              body text.
+   *
+   *   VELLUM (#0a0a0a)         — surface. Neutral near-black every other
+   *                              family sits on. Solid uses take
+   *                              var(--vellum); translucent scrims and
+   *                              overlays take rgba(var(--vellum-rgb), α).
+   *
+   * The logo mark is the one element allowed at full at-rest white —
+   * it functions as the printer's device.
+   *
+   * BODY LINE-HEIGHT — content-driven, three tiers:
+   *
+   *   1.38–1.43  Tight  — single-sentence rows. Compact, scannable.
+   *
+   *   1.57       Loose  — paragraph-length bodies (About roster bios).
+   *                       Booklike, comfortable for reading.
+   *
+   * Different content types deserve different vertical rhythm. Don't
+   * unify this — the divergence is intentional and earned.
+   * ───────────────────────────────────────────────────────────────── */
+  :root {
+    --ink: #f5f5f5;
+    --ink-hover: rgba(245, 245, 245, 0.85);
+    --accent-gold: #ffffff;
+    /* "Lapis" is the historical token name for the signal tone (links,
+       active marks); in the monochrome system it is near-white. */
+    --lapis: #e8e8e8;
+    --vellum: #0a0a0a;
+    --vellum-rgb: 10, 10, 10;
+    --parchment-rgb: 163, 163, 163;
+    /* Parchment opacity tiers — two classes of use:
+     *
+     * SEMANTIC TIERS — interchangeable with intent. Each tier maps to a
+     * specific role in the content hierarchy.
+     *   85 = high-emphasis dimmed (Work 2026 mid-stage value)
+     *   78 = subhead / orientation copy (intro paragraphs)
+     *   62 = metadata labels (mono caps everywhere)
+     *   42 = demoted numerals / footnote text
+     *   33 = primary row borders (article rows)
+     *   22 = standard rule lines (all section dividers)
+     *
+     * GRADIENT STOPS — load-bearing for specific compound effects (the
+     * breathing guide-line animation, footer fade). Don't substitute
+     * these for semantic tiers; the gradient math depends on the exact
+     * opacity values.
+     *   20, 16, 11, 08, 05, 02, 00
+     */
+    --parchment: rgba(var(--parchment-rgb), 1);
+    --parchment-85: rgba(var(--parchment-rgb), 0.85);
+    --parchment-78: rgba(var(--parchment-rgb), 0.78);
+    --parchment-62: rgba(var(--parchment-rgb), 0.62);
+    --parchment-42: rgba(var(--parchment-rgb), 0.42);
+    --parchment-33: rgba(var(--parchment-rgb), 0.33);
+    --parchment-22: rgba(var(--parchment-rgb), 0.22);
+    --parchment-20: rgba(var(--parchment-rgb), 0.2);
+    --parchment-16: rgba(var(--parchment-rgb), 0.16);
+    --parchment-11: rgba(var(--parchment-rgb), 0.11);
+    --parchment-08: rgba(var(--parchment-rgb), 0.08);
+    --parchment-05: rgba(var(--parchment-rgb), 0.05);
+    --parchment-02: rgba(var(--parchment-rgb), 0.02);
+    --parchment-00: rgba(var(--parchment-rgb), 0);
+  }
+
+  .app-shell {
+    position: relative;
+    min-height: 100vh;
+    background: var(--vellum);
+    color: var(--parchment-62);
+    isolation: isolate;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .page-frame {
+    --line-focus-y: 64px;
+    --line-scroll-offset: 0px;
+    --frame-margin: 48px;
+    --sidebar-seam: 160px;
+    --sidebar-column-width: calc(var(--sidebar-seam) - var(--frame-margin));
+    --footer-height: 112px;
+    /* Default top breathing space, also used as the symmetric bottom
+       page-end-space (footer area). Non-home pages override this to
+       144px below so page titles align with the V logo's vertical
+       position (sidebar padding-top: 152px) and feel less low-anchored.
+       Home keeps 160px because its tagline is display-scale and wants
+       more breathing room above. */
+    --page-edge-space: 160px;
+    --gap-title-to-intro: 40px;
+    --gap-after-intro: 44px;
+    /* Optical centering: content sits in the middle of the page-as-document,
+       with the sidebar treated as the left margin. Gutters between sidebar
+       and content (= content-offset) match the gutter between content and
+       right frame-margin. Book-page composition rather than editorial spread. */
+    --content-offset: 223px;
+    --content-start: calc(var(--sidebar-seam) + var(--content-offset));
+    --content-end-pad: calc(var(--frame-margin) + var(--content-offset));
+    --content-width: min(786px, calc(var(--frame-width) - var(--content-start) - var(--content-end-pad)));
+    --content-end: calc(var(--content-start) + var(--content-width));
+    --article-row-inset: 0px;
+    --fourth-line-x: var(--content-end);
+    --frame-left: max(0px, calc((100vw - 1440px) / 2));
+    --frame-width: min(100vw, 1440px);
+    --column-inset: 12px;
+    position: relative;
+    display: flex;
+    min-height: 100vh;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-bottom: var(--footer-height);
+    /* overflow: clip (not hidden) so position:sticky descendants are NOT
+       trapped by the scroll container — needed for the Option C hero. */
+    overflow: clip;
+    /* Edge darkening is owned by ONE layer: the inset binding shadow
+       below. The radial corner vignette that used to stack on top of it
+       was a second system doing the same job — both peaked in the
+       corners and compounded into web-vignette territory. Removed. */
+    background: var(--vellum);
+    /* Inset frame shadow — "bound in heavy cover" depth. The cover
+       casts shadow inward from the page edges, fading toward the
+       reading area in the middle. Settled at 0.35 (was 0.55, an
+       evaluation value) — past ~0.45 the binding-feel reads as
+       web-vignette rather than physical book. */
+    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.35);
+    z-index: 2;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+   * THE LATTICE — brand texture
+   *
+   * Two families of 45° hairlines crossing into a diamond grid: the
+   * structural motif the studio is named for. Painted once on
+   * .app-shell (always full-viewport) so the grid runs edge to edge —
+   * the centered .page-frame is transparent, so this single layer
+   * covers the page interior and the >1440px margins uniformly, with
+   * no tonal seam at the frame boundary. 1px white lines at 3.5%
+   * alpha on a 22px pitch: felt as texture, never reads as pattern.
+   * Pure CSS (repeating-linear-gradient) — device-pixel crisp at any
+   * zoom, no SVG tile to dither.
+   *
+   * Replaces the Valar paper grain (feTurbulence fiber noise on warm
+   * vellum), which belonged to the illuminated-manuscript identity.
+   * ───────────────────────────────────────────────────────────────── */
+  .app-shell::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 22px);
+  }
+
+  /* The binding shadow moves UP to the viewport-spanning shell, and the
+     frame goes transparent so the shadow + lattice show through. At
+     ≤1440px viewport == frame and this renders identically. */
+  .app-shell:has(.page-frame-home) {
+    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.35);
+  }
+
+  .page-frame-home {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .app-shell:has(.page-frame:not(.page-frame-home)) {
+    /* --footer-height is scoped to .page-frame; .frame-bleed-rules is
+       a sibling of the frame, so mirror the value it needs here
+       (tracks .page-frame's declaration). The parchment tokens no
+       longer need mirroring — they live on :root now. */
+    --footer-height: 112px;
+    background: var(--vellum);
+    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.35);
+  }
+
+  .page-frame:not(.page-frame-home) {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Full-bleed continuation of the two horizontal rules (top margin rule +
+     footer top border) into the side margins on viewports wider than the
+     1440 frame. Sits at z-index 1 — above the full-bleed texture (0),
+     below the centered frame (2) — so the frame occludes the middle and
+     the existing .guide-top / footer border draw the centered segment
+     (keeping their scroll + line-focus behavior); these pseudos only show
+     in the margins, continuing each line edge-to-edge. The element spans
+     the full app-shell box (= full document height), and its rules are
+     pinned to the same offsets as the originals: top:64px (matches
+     .guide-top) and bottom:var(--footer-height) (matches the footer's
+     top border). Colors matched per line: top parchment-22, footer
+     parchment-20. */
+  .frame-bleed-rules {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  /* Top margin rule — a hairline at the same offset and alpha as
+     .guide-top (parchment-22 @ 64px). Both sit over the same textured
+     ground (frame interior vs app-shell margin), so they read as one
+     continuous line across the seam. */
+  .frame-bleed-rules::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 64px;
+    width: 100%;
+    height: 1px;
+    background: rgba(var(--parchment-rgb), 0.22);
+  }
+
+  /* Footer rule — extend the footer's whole BAND (opaque #17150f strip +
+     top border), not just the hairline. The frame footer border sits over
+     flat #17150f, so giving the margin segment the same dark band makes
+     the bottom rule continuous over identical background — robust against
+     the margin texture/vignette luminance (which varies with width). The
+     centered frame (z-index 2) occludes the middle; this fills the
+     margins. Border alpha matches the footer's parchment-20. */
+  .frame-bleed-rules::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: var(--footer-height);
+    background: var(--vellum);
+    border-top: 1px solid rgba(var(--parchment-rgb), 0.2);
+  }
+
+  .page-frame-home {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .page-frame-home .page-content {
+    min-height: 100vh;
+  }
+
+  .page-frame-home .page-end-space {
+    display: none;
+  }
+
+  /* Non-home pages: pull the top breathing space up by 32px (from the
+     default 160) so the page title h1 sits higher in the viewport.
+     Page-edge-space also drives the symmetric page-end-space at the
+     bottom, so reducing it pulls the footer's top edge up by the same
+     amount — keeps the top/bottom breathing proportions intact. */
+  .page-frame:not(.page-frame-home) {
+    --page-edge-space: 128px;
+  }
+
+  /* Sidebar — V logo + nav links sit in the same vertical position on
+     every page, including home. */
+  .sidebar-rail {
+    padding-top: 128px;
+  }
+
+  /* Nav — drops to align with the intro paragraph (the body
+     text below the page h1). V stays paired with the title at 128px;
+     nav reads as paired with the intro paragraph at ~208px instead.
+     Editorial result: the sidebar's vertical rhythm mirrors the
+     content lane's — V/title at the top tier, nav/body at the next.
+     Math: V bottom at 176, intro paragraph top at ~208 (h1 line 40 +
+     gap-title-to-intro 40 from --page-edge-space 128), so the nav
+     needs a 32px gap from the V — sidebar's 36px flex gap minus 4px
+     of negative margin = 32. */
+  .primary-nav {
+    margin-top: -4px;
+  }
+
+  .print-filter-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .page-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: calc(100vh - var(--footer-height));
+    width: 100%;
+    flex: 1;
+    flex-direction: column;
+    padding-left: var(--content-start);
+    padding-right: var(--content-end-pad);
+  }
+
+  .page-content-wide {
+    padding-right: var(--frame-margin);
+  }
+
+  /* Skip link — hidden above the viewport until keyboard focus, then
+     surfaces as a gold-ruled vellum pill at the top-left. Sits above
+     the sidebar rail (z-index: 2) and the mobile menu trigger. No
+     transition: the link should appear instantly on Tab, and a sliding
+     entrance would just be motion for its own sake. */
+  .skip-link {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 10;
+    padding: 10px 16px;
+    background: var(--vellum);
+    border: 1px solid var(--accent-gold);
+    color: var(--ink);
+    font-size: 14px;
+    text-decoration: none;
+    transform: translateY(calc(-100% - 24px));
+  }
+
+  .skip-link:focus {
+    transform: none;
+    /* The pill surfacing on screen IS the focus indicator — the
+       browser's default ring on top of the gold border is noise. */
+    outline: none;
+  }
+
+  /* The skip target takes programmatic focus only (tabindex -1) — no
+     focus ring on the whole content column. */
+  #main-content:focus {
+    outline: none;
+  }
+
+  .sidebar-rail {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: var(--frame-left);
+    z-index: 2;
+    display: flex;
+    width: var(--sidebar-seam);
+    min-width: var(--sidebar-seam);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 36px;
+    /* Padding-top sets the V (printer's device)
+       drops down to roughly where the first nav link used to sit.
+       Nav links flow naturally below the V in DOM order — they shift
+       down by the same amount. Reads as the V being deliberately
+       placed within the reading composition rather than floating in
+       the chrome corner. */
+    padding: 128px 0 36px var(--frame-margin);
+  }
+
+  .logo-mark {
+    display: block;
+    width: 48px;
+    height: 48px;
+    overflow: hidden;
+    transform: translateX(calc((var(--sidebar-column-width) - 48px) / 2));
+  }
+
+  .logo-mark:focus-visible,
+  .menu-toggle:focus-visible,
+  .nav-link:focus-visible,
+  .mobile-nav-link:focus-visible,
+  .mobile-menu-social-link:focus-visible,
+  .footer-link:focus-visible {
+    outline: 1px solid var(--accent-gold);
+    outline-offset: 4px;
+  }
+
+  .logo-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .logo-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Typographic logo mark — a serif "L" standing in for logo artwork
+     (Lattice has no plate yet). Full at-rest white is the monochrome
+     system's one sanctioned brightness: the logo as printer's device.
+     Sized to sit optically centered in the 48px mark box. */
+  .logo-mark-text {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    color: var(--accent-gold);
+    font-family: var(--font-serif);
+    font-size: 34px;
+    line-height: 1;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+  }
+
+
+  .primary-nav {
+    display: flex;
+    width: max-content;
+    flex-direction: column;
+    /* Links share a LEFT edge (Team flush under Our Work / Research) —
+       reads as a list, not a centered stack. The BLOCK is still centered
+       between the 1st and 2nd vertical margins via the translateX below,
+       on the same centering grid as the V logo and sidebar wordmark.
+
+       stretch (not flex-start) is deliberate: every link spans the full
+       nav-block width, so the active marker's offset math —
+       (column-width − 100%) / −2 in .nav-link-active::before — resolves
+       identically for all three links and the lapis line always lands
+       on the 1st vertical margin. With fit-content links, a narrow link
+       (Team) computed its own 100% and pushed the marker left of the
+       margin. Text stays left-aligned; stretch only widens the box. */
+    align-items: stretch;
+    gap: 8px;
+    /* Negative margin pulls the nav UP into the sidebar-rail's 36px gap,
+       tightening the V-to-nav distance from 52px to ~24px. Reads as
+       the V being the cap of the nav block rather than a separate
+       element floating above it. */
+    margin-top: -12px;
+    transform: translateX(calc((var(--sidebar-column-width) - 100%) / 2));
+  }
+
+  .menu-toggle {
+    display: none;
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--parchment-78);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    min-height: 48px;
+    min-width: 48px;
+    padding: 0;
+    text-align: right;
+    text-transform: uppercase;
+    transition: color 150ms ease-out;
+  }
+
+  .menu-toggle:hover {
+    color: var(--accent-gold);
+  }
+
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    background: var(--vellum);
+    color: var(--ink);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-12px);
+    transition:
+      opacity 200ms ease-in,
+      transform 200ms ease-in;
+  }
+
+  .mobile-menu-header,
+  .mobile-nav-item,
+  .mobile-menu-social-link {
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 180ms ease-in,
+      transform 180ms ease-in;
+  }
+
+  .mobile-menu-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 86px 10.42% 0;
+  }
+
+  .menu-wordmark {
+    position: relative;
+    display: inline-block;
+    color: var(--parchment-62);
+    font-family: var(--font-serif);
+    font-size: 42px;
+    font-weight: 400;
+    letter-spacing: 0.11em;
+    line-height: 48px;
+    filter: url("#title-print-distort");
+    text-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.78),
+      0 1px 0 rgba(255, 255, 255, 0.1),
+      1px 1px 1px rgba(0, 0, 0, 0.3),
+      0 0 10px rgba(0, 0, 0, 0.24);
+    text-transform: uppercase;
+  }
+
+  .menu-wordmark::before,
+  .menu-wordmark::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .menu-wordmark::before {
+    z-index: -1;
+    color: rgba(0, 0, 0, 0.54);
+    transform: translate(0.9px, 1px);
+    filter: blur(0.7px);
+  }
+
+  .menu-wordmark::after {
+    color: rgba(255, 255, 255, 0.08);
+    transform: translate(0, 1px);
+    mix-blend-mode: screen;
+  }
+
+  .mobile-menu-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 36px;
+    min-height: 0;
+    padding: clamp(56px, 10vh, 96px) 10.42% 64px;
+  }
+
+  .mobile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .mobile-nav-item {
+    position: relative;
+  }
+
+  .mobile-nav-link {
+    display: block;
+    padding: 4px 0;
+    color: var(--parchment);
+    font-family: var(--font-serif);
+    font-size: 42px;
+    font-weight: 300;
+    letter-spacing: -0.015em;
+    line-height: 48px;
+  }
+
+  .mobile-nav-item-active .mobile-nav-link {
+    color: var(--parchment);
+  }
+
+  .mobile-nav-item-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -16px;
+    width: 1px;
+    background: var(--lapis);
+  }
+
+  .mobile-menu-social {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 28px;
+    margin-top: auto;
+  }
+
+  .mobile-menu-social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    color: var(--lapis);
+    font-family: var(--font-sans);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 28px;
+    /* iOS HIG: 44pt minimum tap target on both axes. min-width covers
+       single-character links ("X") whose intrinsic width would otherwise
+       fall well below 44px. */
+    min-height: 44px;
+    min-width: 44px;
+    filter: url("#title-print-distort");
+    transition: color 180ms ease;
+  }
+
+  .mobile-menu-social-link:hover {
+    color: var(--accent-gold);
+  }
+
+
+  .nav-link {
+    position: relative;
+    /* No column-inset padding — it shifted the text 6px right of the
+       sidebar column's center. The link box is now exactly its text,
+       so the centering math in .primary-nav lands the text true. */
+    padding-left: 0;
+    color: var(--parchment);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    transition: color 180ms ease;
+    white-space: nowrap;
+  }
+
+  .nav-link:hover {
+    color: var(--parchment);
+  }
+
+  /* Active nav marker — lapis (Black Hours ultramarine). Manuscript
+     rubrication convention: section/chapter markers used red/blue.
+     The text itself stays parchment so all nav links share the same
+     #BCA98A register; the vertical lapis mark carries location. */
+  .nav-link-active,
+  .nav-link-active:hover {
+    color: var(--parchment);
+  }
+
+  .nav-link-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc((var(--sidebar-column-width) - 100%) / -2);
+    width: 1px;
+    background: var(--lapis);
+  }
+
+  /* Home-only sidebar bottom padding — centers the wordmark in the
+     64px band between the plate's bottom rule and the viewport edge:
+     (64px band − 24px wordmark line box) / 2 = 20px below, leaving
+     20px above. Padding on this rail is INSIDE a position: fixed
+     element, so it can never add scroll height to the page. */
+  .page-frame-home .sidebar-rail {
+    padding-bottom: 20px;
+  }
+
+  /* Sidebar wordmark — uses the existing .wordmark class for the full
+     deboss treatment (multi-layer text-shadow, print-distort filter,
+     parchment-62 ink). This block only overrides what the sidebar
+     context needs: alignment to the sidebar column's centering grid,
+     and a small letter-spacing tightening since the existing 0.11em
+     would overflow the 112px column at 30px serif. */
+  .sidebar-wordmark {
+    margin-top: auto;
+    width: auto;
+    /* Clearance INSIDE the frame. "LATTICE" is 7 caps (~4.8em wide with
+       0.11em tracking) vs the 5-cap "VALAR" (~3.8em) this column sizing
+       was tuned for — at 24px it would run ~115px in the 112px column
+       and get sliced by both vertical guides. 19px sets it ~91px wide:
+       centered with visible air to each guide, a quiet imprint sitting
+       inside the column rather than breaking it. */
+    font-size: 19px;
+    line-height: 24px;
+    transform: translateX(calc((var(--sidebar-column-width) - 100%) / 2));
+  }
+
+  /* When the footer-in-view hides the theme toggle, hide the sidebar
+     wordmark too — both belong to the same "page chrome" register.
+     Defensive: home doesn't render the footer, but keeps the behavior
+     consistent if home ever gains one later. */
+  body.footer-in-view .sidebar-wordmark {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 240ms ease;
+  }
+
+  /* View Transitions API — when the theme class on <html> changes inside
+     a startViewTransition() callback, browsers that support the API
+     crossfade old and new renderings. Firefox without support falls
+     back to an instant snap (acceptable). */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 240ms;
+    animation-timing-function: ease;
+  }
+
+  /* Footer-in-view state — when the footer becomes visible (set by the
+     IntersectionObserver in App.jsx), section-active indicators revert
+     to their inactive treatment. The user has scrolled past the content
+     into the footer area — no longer "reading a section," so the
+     position indicators stop. */
+  body.footer-in-view .capacity-comparison[data-active] .capacity-comparison-eyebrow,
+  body.footer-in-view .work-roadmap[data-active] .work-roadmap-eyebrow,
+  body.footer-in-view .work-current[data-active] .work-current-eyebrow {
+    color: var(--parchment-62);
+  }
+
+  body.footer-in-view .capacity-comparison[data-active] .capacity-comparison-eyebrow::before,
+  body.footer-in-view .work-roadmap[data-active] .work-roadmap-eyebrow::before,
+  body.footer-in-view .work-current[data-active] .work-current-eyebrow::before {
+    background: var(--parchment-22);
+  }
+
+  .intro-section {
+    position: relative;
+    display: flex;
+    width: 100%;
+    padding-top: var(--page-edge-space);
+    /* Shared handoff from page thesis/caption into the page-specific body.
+       First-row padding remains owned by each body pattern. */
+    padding-bottom: var(--gap-after-intro);
+  }
+
+  .content-lane {
+    width: 100%;
+    max-width: var(--content-width);
+  }
+
+  .intro-section .content-lane {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-title-to-intro);
+  }
+
+  /* Intro always sits in the 786px reading column, even when the page body
+     breaks out wider (e.g., Work's roadmap table). Prose follows the reading
+     lane; structural blocks break out below it. */
+
+  h1 {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 36px;
+    font-weight: 400;
+    letter-spacing: -0.018em;
+    line-height: 40px;
+    /* Letterpress: barely-perceptible darker offset below the ink, mimicking
+       the depression of type pressed into vellum. Below the threshold of
+       conscious noticing but reads as physical weight. */
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+  }
+
+
+  /* No special treatment for title accent spans — they render as regular
+     ink, same as the surrounding heading. Kept as a no-op rule so the
+     class hook remains in the system for future use. */
+  .title-accent {
+    /* inherits everything from h1 */
+  }
+
+  .intro-copy {
+    width: 100%;
+    max-width: 669px;
+    margin: 0;
+    color: var(--parchment-78);
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .intro-section-work .intro-copy {
+    max-width: var(--content-width);
+    /* Work's intro is the site's THESIS ("There are no privacy systems at
+       scale… Valar is helping Zcash solve them"), not orientation copy.
+       At parchment-85 it rendered as dim warm tan on the near-black ground —
+       the most important prose on the site was also the hardest to read.
+       Lifted to ink-hover (cream at 85%, not parchment-tan): the cream's
+       higher luminance carries real contrast on #17150f, so the argument
+       reads at near-title brightness. The 15% step below full ink keeps it
+       just subordinate to the h1, preserving title → thesis hierarchy.
+       This is the one body paragraph allowed into the ink register — the
+       dimmer parchment orientation tier still owns Research/Team intros. */
+    color: var(--ink-hover);
+  }
+
+  .article-section {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    flex: 1;
+  }
+
+  .page-body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    flex: 1;
+  }
+
+  .page-end-space {
+    /* Bottom gap is page-edge-space minus the footer's own padding-top (32px)
+       so the visible empty vellum from last content to first footer text
+       equals the top gap (page top → h1). The footer's internal breath is
+       part of the bottom empty space, not in addition to it. */
+    flex: 0 0 calc(var(--page-edge-space) - 32px);
+    width: 100%;
+  }
+
+  .page-body-wide .page-body-lane {
+    max-width: none;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     HOME — landing-page frontispiece
+
+     Single-viewport composition. Center lane holds the hero
+     illumination + positioning sentence + colophon. The right gutter
+     holds margin cards (latest research + manifesto) in the
+     diffused/clean hover register. Footer is gated off in App.jsx
+     via page.layout.hideFooter — the landing has no scroll, no
+     bottom-of-page reward to deliver.
+     ───────────────────────────────────────────────────────────────── */
+
+  .home-section {
+    /* Hero+card block vertically centered in the section.
+       Top and bottom paddings match (both 64px = at the top/bottom
+       horizontal guide positions), and the lane uses justify-content:
+       center to position the content block at the midpoint of the
+       remaining height. Visible result: equal whitespace above hero
+       and below card. */
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+
+  /* Hero + margin rails stack above the WebGL layer. Margin rails
+     already declared z-index: 2; here we lift the content lane and
+     vertically center its content (hero + freedom-money card) within
+     the section so the pair sits as one frontispiece block instead of
+     pinning to the top.
+
+     The lane spans from the 2nd guide (sidebar-seam) to the 5th
+     visible guide (right-inner — outermost right vertical, which sits
+     at frame-margin from the right edge). With the 3rd and 4th stems
+     hidden on home, right-inner is the rightmost vertical, so the
+     "center between 2nd and 5th" reference frame is sidebar-seam ↔
+     right-inner. Math: lane width = content-width + 2*content-offset
+     so it extends leftward AND rightward by content-offset (223px each
+     side) from the standard content lane. The negative margin-left
+     places the lane's left edge at sidebar-seam; the wider width
+     places the right edge at right-inner.
+
+     flex-shrink: 0 is critical — .home-section is a row-flex with the
+     standard content-width container (786px). Without flex-shrink: 0
+     the flex engine squashes the lane back to 786px to fit its parent,
+     and the card centers in the wrong rectangle. */
+  .home-lane {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    /* Hero stays anchored at the top (flex-start). The freedom-money
+       card is absolutely positioned to the viewport bottom — out of
+       this flex flow entirely. See .home-hero-cards. */
+    justify-content: flex-start;
+    margin-left: calc(-1 * var(--content-offset));
+    width: calc(var(--content-width) + 2 * var(--content-offset));
+    max-width: calc(var(--content-width) + 2 * var(--content-offset));
+  }
+
+  /* On the home page, lift the margin guides above the backdrop so
+     the manuscript ruling reads through the photograph. Default
+     z-index: 0 puts guides below the home-lane (z-index: 1), which
+     contains the backdrop — without this override, the backdrop
+     covers the guides. */
+  .page-frame-home .margin-rules {
+    z-index: 2;
+  }
+
+  /* Lift hero + card above the backdrop. Both already live inside
+     the home-lane (which is the backdrop's stacking context); a
+     small z-index on each pulls them above the backdrop's z-index: 0. */
+  .home-hero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    /* No horizontal padding — hero h1 sits flush at the content-lane
+       left edge so it shares a left baseline with the landscape card
+       below. Inner padding was breaking that alignment. */
+    padding: 0;
+    /* Drop the hero so its top aligns with the V logo. V logo top =
+       sidebar-rail padding-top (128px); home-section padding-top is
+       64px (top horizontal guide). Difference = 64px. */
+    margin-top: 64px;
+  }
+
+  /* Illumination — halftone plate at the top of the hero. Treated as a
+     frontispiece image: sized to the content column, low-key blended into
+     the dark vellum surface, with a parchment hairline above and below to
+     read as a manuscript figure plate rather than a hero photograph. */
+  .home-hero-illumination {
+    position: relative;
+    margin: 0;
+    /* Plate inset from the content-lane edge — implies a tipped-in figure
+       rather than a bleeding hero image. */
+    width: 100%;
+    padding: 18px 0 24px;
+    border-top: 1px solid var(--parchment-22);
+    border-bottom: 1px solid var(--parchment-22);
+  }
+
+  .home-hero-illumination img {
+    display: block;
+    width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    /* The halftone plates are sepia/tan; the dark vellum behind them
+       does most of the tonal work, but a subtle multiply-style mix keeps
+       them from feeling pasted-on. */
+    mix-blend-mode: screen;
+    opacity: 0.92;
+  }
+
+  /* Positioning sentence — the page's protagonist. Larger than the
+     content-page h1 (which sits at 36px) because this is the
+     frontispiece, not a section title. Stays in serif Martina, ink
+     color, with the letterpress shadow inherited from h1. */
+  .home-hero-positioning {
+    /* Optical top-alignment with the V logo. The hero block's top edge
+       already lands at 128px (64px section padding + 64px hero margin),
+       matching the logo's padding-top — but a glyph's cap line starts
+       ~0.18em below its line box, so the caption rendered visibly lower
+       than the V. The negative em margin lifts the cap line itself to
+       the logo's top edge, and scales with the clamp()ed font size. */
+    margin: -0.18em 0 0;
+    font-family: var(--font-serif);
+    /* Title-plate scale — 28px floor / 88px ceiling. The previous
+       140px ceiling competed with the engraving for protagonist;
+       this scale keeps the hero commanding without dominating the
+       illustration. text-wrap: balance handles multi-line wraps if
+       the headline ever needs to break (localized copy, etc.). */
+    /* Sized as if set within the 3rd–4th vertical margins (the 786px
+       content column of /work) even though home hides those guides:
+       the caption renders ~11.1em wide, so a 68px ceiling keeps it
+       ~755px — inside the phantom column with a little air — where the
+       old 76px ceiling overshot it (~845px). Preferred returns to the
+       documented 4.5vw DISPLAY tier, which tracks the shrinking column
+       through the mid range (e.g. ~58px → ~648px wide at 1300px, where
+       the column is ~646px). Floor 36px unchanged. */
+    font-size: clamp(36px, 4.5vw, 68px);
+    font-weight: 400;
+    letter-spacing: -0.034em;
+    line-height: 1.05;
+    text-align: center;
+    white-space: nowrap;
+    text-wrap: balance;
+    color: var(--ink);
+    text-shadow: none;
+  }
+
+  /* Colophon — the supporting beat. "Freedom money is…" sits below the
+     positioning, smaller, in the editorial parchment-78 register. The
+     lead phrase ("Freedom money") is italicized in the same serif so
+     the term reads as a definition entry, not just sentence kickoff. */
+  .home-hero-colophon {
+    max-width: 620px;
+    margin: 0;
+    color: var(--parchment-85);
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 1.45;
+  }
+
+  .home-hero-colophon-lead {
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  .home-hero-colophon-body {
+    margin-left: 0.35em;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     Margin rail — cards stacked in the right gutter
+
+     Positioned absolute relative to .page-content (which is the wrapper
+     inside .page-frame, position: relative). The right gutter between
+     content-lane edge and right frame edge is content-end-pad
+     (~271px) — we sit cards inside it with breathing room on both
+     sides. The rail aligns top with the hero illumination.
+
+     Cards render in the "diffused to clean" register: at rest the
+     card is dimmed and the illumination is slightly desaturated; on
+     hover, the card brightens, the illumination clarifies, the
+     excerpt fades in, and the arrow surfaces. One continuous gesture,
+     no flip. (See landing-page conversation notes — direct link
+     editorial register, not Reuben Son card flip.)
+     ───────────────────────────────────────────────────────────────── */
+  /* Both rails span the FULL gutter width — content-offset (223px) wide,
+     edge-to-edge between the inner guides. .home-section's left edge sits
+     at content-start and its right edge at content-end, so each rail
+     bleeds past those edges with negative left/right offsets to land in
+     its respective margin. */
+  .home-margin-rail {
+    position: absolute;
+    top: var(--page-edge-space);
+    z-index: 2;
+    display: flex;
+    width: var(--content-offset);
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .home-margin-rail-left {
+    /* Left gutter: sits between sidebar-seam (160) and content-start (383).
+       To position the rail's LEFT edge at sidebar-seam, we bleed leftward
+       by content-offset (223px) from .home-section's left edge (which is
+       at content-start). */
+    left: calc(-1 * var(--content-offset));
+  }
+
+  .home-margin-rail-right {
+    /* Right gutter: sits between content-end (1169) and the right frame
+       edge minus frame-margin. Bleed rightward by content-offset from
+       .home-section's right edge. */
+    right: calc(-1 * var(--content-offset));
+  }
+
+  /* Stripe-Press-style cards: image is the protagonist, title is a small
+     caption below. No borders, no padding around the image — the
+     illumination spans card-width, edge-to-edge. Featured cards add a
+     visible caption (the definition) below the title.
+
+     Hover is restrained: subtle translateY lift and a small brightness
+     bump on the image. No diffuse-on-rest, no excerpt fade-in, no
+     arrow — the card IS the link, and the image makes that obvious. */
+  .home-margin-card {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    border: 1px solid var(--parchment-22);
+    border-radius: 2px;
+    background-color: rgba(var(--parchment-rgb), 0.025);
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      transform 280ms ease-out,
+      border-color 280ms ease-out,
+      background-color 280ms ease-out;
+  }
+
+  .home-margin-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--parchment-33);
+    background-color: rgba(var(--parchment-rgb), 0.05);
+  }
+
+  .home-margin-card-illumination {
+    display: block;
+    overflow: hidden;
+    width: 100%;
+    /* Tall, image-led panel — 4:3 portrait-ish at the rail's 223px width
+       gives ~167px tall. The halftone plates are landscape, so
+       object-fit: cover crops them to the panel's aspect. A hairline at
+       the bottom separates plate from caption — manuscript convention. */
+    aspect-ratio: 4 / 3;
+    border-bottom: 1px solid var(--parchment-22);
+    background-color: rgba(var(--parchment-rgb), 0.04);
+  }
+
+  .home-margin-card-illumination img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    /* Sharp at rest — the image is the protagonist. A very subtle filter
+       sits on it to integrate with the dark vellum (screen blend lifts
+       the halftone dots without flattening detail). */
+    mix-blend-mode: screen;
+    opacity: 0.94;
+    transition:
+      filter 320ms ease-out,
+      opacity 320ms ease-out;
+  }
+
+  .home-margin-card:hover .home-margin-card-illumination img {
+    opacity: 1;
+    filter: brightness(1.06);
+  }
+
+  .home-margin-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    /* Caption padding inside the card. Top is smaller (12px) — the
+       plate's bottom hairline already provides visual separation;
+       sides + bottom (14px) give the caption proper breathing room
+       inside the card's border. */
+    padding: 12px 14px 14px;
+  }
+
+  /* Eyebrow and date kept as inert rules in case content data restores
+     them — currently unrendered by HomeContent. */
+  .home-margin-card-eyebrow {
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    line-height: 14px;
+    text-transform: uppercase;
+  }
+
+  .home-margin-card-date {
+    color: var(--lapis);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 14px;
+  }
+
+  .home-margin-card-title {
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 19px;
+    transition: color 200ms ease-out;
+  }
+
+  .home-margin-card:hover .home-margin-card-title {
+    color: var(--accent-gold);
+  }
+
+  /* Title row: title + (optional) external arrow on the same baseline.
+     Arrow is hidden at rest and slides in on hover for non-featured cards. */
+  .home-margin-card-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .home-margin-card-arrow {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    margin-left: auto;
+    color: var(--lapis);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition:
+      color 200ms ease-out,
+      opacity 240ms ease-out,
+      transform 240ms ease-out;
+  }
+
+  .home-margin-card:hover .home-margin-card-arrow {
+    color: var(--accent-gold);
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Excerpt is collapsed at rest, fades in on hover. The featured
+     card (excerpt-open) overrides this to keep its caption visible. */
+  .home-margin-card-excerpt {
+    overflow: hidden;
+    max-height: 0;
+    color: var(--parchment-78);
+    font-size: 12px;
+    line-height: 16px;
+    opacity: 0;
+    transition:
+      max-height 320ms ease-out,
+      opacity 220ms ease-out,
+      margin-top 320ms ease-out;
+  }
+
+  .home-margin-card:hover .home-margin-card-excerpt {
+    max-height: 96px;
+    margin-top: 2px;
+    opacity: 1;
+  }
+
+  /* Featured card — anchored at top of the rail, with the caption (the
+     definition itself) visible at rest. Slightly larger title to
+     differentiate from research cards. */
+  .home-margin-card-featured .home-margin-card-title {
+    font-size: 17px;
+    line-height: 22px;
+  }
+
+  .home-margin-card-excerpt-open .home-margin-card-excerpt {
+    max-height: 240px;
+    margin-top: 2px;
+    opacity: 1;
+  }
+
+  /* Dictionary-entry composition for the featured Freedom Money card.
+     Pronunciation header (mono italic, parchment-62) sits below the
+     title; numbered points stack each on its own line with a small
+     mono numeral in the lapis-bright data tier. */
+  .home-margin-card-pronunciation {
+    margin-top: 2px;
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 16px;
+  }
+
+  .home-margin-card-points {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .home-margin-card-points li {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 8px;
+    font-family: var(--font-serif);
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 17px;
+  }
+
+  .home-margin-card-point-num {
+    color: var(--lapis);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    line-height: 17px;
+  }
+
+  .home-margin-card-point-text {
+    /* Parchment (#BCA98A), not ink — full white is too harsh for the
+       definition prose against the dark ground. */
+    color: rgb(var(--parchment-rgb));
+  }
+
+  /* Linked dictionary point (e.g. "Zcash" → /work). Inherits the body
+     ink color by default so it reads as part of the definition prose,
+     not as a styled UI link. On hover, the text shifts to gold and
+     gets a subtle underline — the manuscript "see also" cross-
+     reference reveals itself only when invited. No arrow glyph —
+     arrows are reserved for external links on this site. */
+  .home-margin-card-point-link {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 180ms ease;
+  }
+
+  .home-margin-card-point-link:hover,
+  .home-margin-card-point-link:focus-visible {
+    color: var(--accent-gold);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .home-margin-card-point-zcash {
+    font-weight: 500;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     Landscape hero card — the Freedom Money definition rendered as a
+     horizontal panel directly below the hero positioning sentence.
+     No image (illumination is null in data for hero-placement cards).
+     Body uses a 2-column grid: title + pronunciation on the left,
+     numbered points on the right. The card border, fill, and hover
+     state are inherited from .home-margin-card; only the layout and
+     scale are overridden here.
+     ───────────────────────────────────────────────────────────────── */
+  /* Card's bottom-right corner lands inside the corner-bottom-right
+     registration mark's L-bend. The lane's bottom-right corner is
+     already at (page-frame-right − frame-margin, page-frame-bottom
+     − section-padding) — i.e. (page-frame-right − 48, page-frame-
+     bottom − 64) — which is exactly where the corner mark's L bends.
+     So right: 0; bottom: 0 aligns the card with the registration. */
+  .home-hero-cards {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    /* Lift above the home-backdrop (z-index: 0). */
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    /* Credit-card aspect (ISO 7810 ID-1, 1.586:1) — the Freedom Money
+       definition rendered as a literal money card. 480px × ~303px,
+       anchored bottom-right inside the corner-bottom-right registration
+       mark's L. Sized so the card reads as the composition's destination
+       (the rails climb toward it) rather than competing with the rails
+       image for protagonist. Dictionary-entry flow inside: headword on
+       top, numbered definitions below. */
+    max-width: 480px;
+    margin: 0;
+    gap: 16px;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     PRINTED-DICTIONARY-ENTRY treatment for the Freedom Money card.
+
+     Frame removed — real dictionary entries aren't boxed UI cards,
+     they're inline glossary columns. Replaced with two parchment-22
+     hairlines (above and below) reading as a printed column entry
+     within a larger glossary. No fill, no border, no inset shadow.
+
+     Scale recomposed for entry-density rather than UI-card spaciousness:
+       - Headword 72→40, bold (still prominent but proportional)
+       - Pronunciation tightened against the headword
+       - Sense numerals slightly larger, bold, no period (brand call)
+       - Sense body 17-20px → 16px / lh 1.5 (real reading register)
+       - New italic "example" treatment (parchment-78) after the
+         definition's terminal period, mimicking dictionary usage notes
+     ───────────────────────────────────────────────────────────────── */
+  .home-hero-cards .home-margin-card {
+    /* Transparent card — the backdrop photograph + 0.55 overlay
+       shows through where the card sits. The inner rectangle is the
+       SOLE visible frame element. Aspect ratio locks the credit-card
+       shape (ISO 7810 ID-1) regardless of content height. */
+    position: relative;
+    overflow: visible;
+    width: 100%;
+    aspect-ratio: 1.586 / 1;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+    transition: none;
+  }
+
+  /* Inner rectangle — outer of the two concentric frames. Inset 12px from
+     card edge with corner brackets positioned at each of ITS four corners.
+     The brackets are background-images on the ::before so they sit on the
+     rectangle itself, hugging each corner inward.
+
+     Inset is 12px (was 14px) so the gap to the inner double-rule (::after
+     at 22px) opens from 8px → 10px — the doubling reads a touch more
+     legibly on close inspection while still merging into one border at a
+     distance. Widened on THIS frame rather than pulling ::after inward,
+     because ::after's soft depth shadow already runs up against the
+     frosted-glass overlay at inset 28px.
+
+     Border opacity bumped 0.55 → 0.85 for visibility on dark vellum.
+     z-index: 1 so the rectangle stays above the dark background but
+     below the body content (which sits inside the rectangle via the
+     body's larger padding). */
+  .home-hero-cards .home-margin-card::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 12px;
+    z-index: 1;
+    /* Carved-in deboss for the inner rectangle.
+       - The line itself is DARK (outline + inset box-shadow at the
+         same position) — reads as the recess interior, "absent" from
+         the surface plane
+       - Outset box-shadow upper-left: dark shadow band just outside
+         the line (surface above + left of the carve catches less
+         light at the edge)
+       - Outset box-shadow lower-right: parchment highlight band just
+         outside the line (surface below + right catches reflected
+         light from the recess wall)
+       Net effect: a thin groove appears carved into the vellum. */
+    border: 0;
+    outline: 1.5px solid rgba(0, 0, 0, 0.7);
+    outline-offset: -1.5px;
+    /* Print effect — the displacement filter applies to the entire
+       pseudo (outline, box-shadow, and bracket SVG backgrounds),
+       giving every line a subtle imperfection like printed ink on
+       paper rather than vector-perfect rendering. */
+    filter: url("#title-print-distort");
+    box-shadow:
+      inset 0 0 0 1.5px rgba(0, 0, 0, 0.7),
+      -1px -1px 0 rgba(0, 0, 0, 0.45),
+      1px 1px 0 rgba(var(--parchment-rgb), 0.22);
+    pointer-events: none;
+  }
+
+  /* Inner-inner rectangle — parchment line at inset 22px from card
+     edge, intersecting the corner-bracket arms partway along their
+     length. Matches the bracket color (parchment-90) so the rectangle
+     reads as a continuation of the same ornamental layer. Outline +
+     inset box-shadow for sub-pixel rendering safety. */
+  .home-hero-cards .home-margin-card::after {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 22px;
+    z-index: 2;
+    outline: 1px solid rgba(var(--parchment-rgb), 0.9);
+    outline-offset: -1px;
+    /* Five-line carved-rule frame with depth on BOTH walls. The inner
+       dark line previously matched the outer dark only in line-weight
+       — but the outer line "reads as carved" because the parchment
+       sits on the surface plane next to it. To make the inner line
+       feel equally carved, we strengthen it (opacity 0.85) and add
+       a SOFT inset depth shadow extending toward the interior — the
+       recess fading into darkness as it goes deeper. Mirror move on
+       the outside: soft outset shadow fading outward, giving the
+       outer dark line the same atmospheric depth.
+
+       Box-shadow stack (front-to-back; first listed renders on top):
+         outset 1px sharp dark    — outer recess wall edge
+         outset 6px soft dark     — outer cast shadow fading outward
+         inset 0-1px parchment    — first parchment rule (preserved)
+         inset 1-2px dark gap     — recess between parchment rules
+         inset 2-3px parchment    — second parchment rule
+         inset 3-4px sharp dark   — inner recess wall edge (stronger)
+         inset 4-10px soft dark   — inner cast shadow fading inward */
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--parchment-rgb), 0.9),
+      inset 0 0 0 2px var(--vellum),
+      inset 0 0 0 3px rgba(var(--parchment-rgb), 0.9),
+      inset 0 0 0 4px rgba(0, 0, 0, 0.85),
+      inset 0 0 6px 4px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(0, 0, 0, 0.85),
+      0 0 6px 1px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    filter: url("#title-print-distort");
+  }
+
+  .home-hero-cards .home-margin-card:hover,
+  .home-hero-cards .home-margin-card:focus-visible,
+  .home-hero-cards .home-margin-card-static:hover {
+    background-color: transparent;
+    transform: none;
+  }
+
+  /* Keyboard focus ring on the freedom-money card. Required for
+     accessibility — tab navigation to the card needs visible
+     indication. Gold outline matches the brand accent and aligns
+     with the gold headword inside the card. Outline-offset: 4px
+     creates breathing room from the carved frame's outer dark line. */
+  .home-hero-cards .home-margin-card:focus-visible {
+    outline: 2px solid var(--accent-gold);
+    outline-offset: 4px;
+    border-radius: 0;
+  }
+
+  /* Static cards (no href — Freedom Money) — cursor default, no lift. */
+  .home-margin-card-static,
+  .home-margin-card-static:hover {
+    transform: none;
+    cursor: default;
+  }
+
+  .home-hero-cards .home-margin-card-body {
+    /* position + z-index establish a local stacking context so the
+       overlay ::before can use z-index: -1 (behind the text but
+       INSIDE the body's context, not escaping into the card layer). */
+    position: relative;
+    z-index: 0;
+    /* Dictionary-entry flow inside the landscape rectangle: headword
+       at the top (with pronunciation inline if present), numbered
+       definitions below with hanging numerals. Top-to-bottom OED
+       register; the landscape shape just gives the entry a wider
+       text measure than the portrait card did. */
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center genuinely centers the entry within the
+       fixed-aspect-ratio card. The column was previously top-aligned
+       (flex default) so the headword + 4 definitions pooled near the top
+       with slack at the bottom — the padding alone never centered it.
+       The 34px top/bottom padding now just sets the minimum margins the
+       centered block can grow into. */
+    justify-content: center;
+    gap: 4px;
+    /* Generous left/right inset gives the larger headword breathing
+       room against the carved double-rule frame. */
+    padding: 34px 48px 34px 52px;
+    height: 100%;
+  }
+
+  /* Frosted-glass overlay strictly INSIDE the carved double-rule
+     frame. The photograph remains visible through the overlay (no
+     solid color fill); backdrop-filter softens it with blur + a
+     small brightness reduction so the text reads clearly without
+     occluding the rails image. The frame ornament still sits on the
+     unblurred photo backdrop.
+
+     Position math:
+       - Card ::before dark outer rectangle sits at inset 14px
+       - Card ::after parchment double-rule + dark walls extend to
+         ~inset 25-26px
+       - This overlay at inset 28px sits 2-3px inside the innermost
+         frame wall, so the whole frame stays on the clear photo.
+     z-index: -1 puts it BEHIND the body text but within the body's
+     stacking context so it doesn't escape upward and hide the frame
+     elements rendered by the card's ::before/::after. */
+  .home-hero-cards .home-margin-card-body::before {
+    content: "";
+    position: absolute;
+    inset: 28px;
+    z-index: -1;
+    background-color: rgba(46, 42, 31, 0.18);
+    backdrop-filter: blur(1.5px) brightness(0.85);
+    -webkit-backdrop-filter: blur(2px) brightness(0.85);
+    pointer-events: none;
+    transition:
+      backdrop-filter 220ms ease,
+      -webkit-backdrop-filter 220ms ease,
+      background-color 220ms ease;
+  }
+
+  /* On hover OR keyboard focus, the frosted-glass overlay clears
+     entirely — no blur, no brightness reduction, no dark tint. The
+     rails image behind the card becomes fully visible, completing
+     the "entering the rails" metaphor right before activation.
+     Includes :focus-visible so keyboard users get the same reveal
+     mouse users get on hover. */
+  .home-hero-cards .home-margin-card:hover .home-margin-card-body::before,
+  .home-hero-cards .home-margin-card:focus-visible .home-margin-card-body::before {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: transparent;
+  }
+
+  /* "Zcash" — the last point — stays gold at rest. Reinforces the
+     destination: the entry that names Valar's specific instance of
+     freedom money is the live endpoint of the definition. */
+  .home-hero-cards .home-margin-card-points li:last-child .home-margin-card-point-text {
+    color: var(--accent-gold);
+    transition: color 220ms ease;
+  }
+
+  .home-hero-cards .home-margin-card:hover .home-margin-card-points li:last-child .home-margin-card-point-text,
+  .home-hero-cards .home-margin-card:focus-visible .home-margin-card-points li:last-child .home-margin-card-point-text {
+    color: var(--accent-gold);
+  }
+
+  /* OED column convention — title-row indented 30px so the headword
+     baseline-aligns with the definition TEXT column below (20px
+     numeral col + 10px gap = 30px). The numerals hang to the left
+     of the headword's left edge; headword and definitions share a
+     single text column. Honest dictionary register. */
+  .home-hero-cards .home-margin-card-title-row {
+    padding-top: 10px;
+    padding-left: 42px;
+  }
+
+  .home-hero-cards .home-margin-card-title {
+    /* Illuminated-capital register — gold by default. Manuscript
+       convention: defined-term headwords got the gold/illumination
+       treatment in real codices (the printer's-mark-equivalent of
+       headword-as-thesis). Breaks the prior "gold only on hover"
+       rule deliberately — this is the page's protagonist content,
+       not a UI affordance. */
+    color: var(--accent-gold);
+    /* Display headword — proportional to the landscape card, not
+       competing with the page-level positioning headline above. At
+       ~47px ceiling, "freedom money" reads as the entry's headword
+       (large, gold, illuminated) while staying clearly subordinate to
+       the hero sentence. Body definitions sit small underneath. */
+    font-size: clamp(34px, 3.2vw, 47px);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.022em;
+
+    /* GOLD INLAY in a carved channel.
+       The letter SHAPE is the carved depression; the gold fills it
+       uniformly (no internal gradient — gold inlay is one material).
+       The carved illusion comes from shadows OUTSIDE the letter
+       (on the vellum surface around the carve), not from tonal
+       shading INSIDE the gold. Classic deboss pattern: dark shadow
+       on the upper-left edge of the carve, parchment highlight on
+       the lower-right edge. */
+    filter: url("#title-print-distort");
+    text-shadow:
+      -1px -1px 0 rgba(0, 0, 0, 0.9),
+      -2px -2px 4px rgba(0, 0, 0, 0.5),
+      1px 1px 0 rgba(245, 236, 213, 0.2);
+  }
+
+  .home-hero-cards .home-margin-card-pronunciation {
+    /* IPA stacks under the headword in the same 30px OED column so
+       title + pronunciation + numbered definitions share the text
+       column edge. */
+    margin-top: 0;
+    padding-left: 30px;
+    color: var(--parchment-62);
+    font-size: clamp(13px, 1.1vw, 15px);
+    line-height: 1.4;
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+  }
+
+  .home-hero-cards .home-margin-card-points {
+    /* Numbered definitions sit under the headword, separated by a
+       proper hierarchy gap. Numerals (20px col) hang to the left of
+       the text column, aligning with the headword's left edge. */
+    margin: 22px 0 0;
+    gap: 10px;
+  }
+
+  .home-hero-cards .home-margin-card-points li {
+    grid-template-columns: 24px 1fr;
+    column-gap: 10px;
+    color: var(--parchment);
+    /* Senses match the NAV register — same IBM Plex Sans family, same
+       parchment (#BCA98A) ink as .nav-link — so all small utility text
+       on the page shares one voice; serif stays reserved for display
+       (hero positioning, headword). letter-spacing reset to 0: the
+       -0.005em inherited from the base rule was serif tracking. */
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    /* 16px — the largest size at which the longest senses ("encrypted;
+       your information is your business", "spendable; you can always
+       use your cash") hold a single line in the column-major grid.
+       18px wrapped both and doubled the band's height. The legibility
+       win comes from the sans family + parchment ink + scrim, not from
+       size alone. */
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    /* Print effect deliberately removed from definition body. At 17–19px
+       the feTurbulence displacement crosses from "letterpress edge"
+       into "blurry rendering artifact." Body text in real manuscripts
+       and print is set cleanly; the letterpress treatment belongs to
+       display type only (title and pronunciation above retain it). */
+  }
+
+  .home-hero-cards .home-margin-card-point-num {
+    color: var(--parchment-62);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.55;
+    /* Print-distort filter removed — same rationale as the definition
+       body above: below ~17px the turbulence displacement reads as a
+       blurry rendering artifact, not a letterpress edge. Crisp numerals
+       do more for the senses' presence than roughened ones. */
+  }
+
+  /* Italic example/usage note after the definition's terminal period.
+     Mimics dictionary convention where the second part of a sense
+     division (illustrating or qualifying the definition) is set in
+     italic at a slightly demoted color tier. */
+  .home-hero-cards .home-margin-card-point-example {
+    color: var(--parchment-78);
+    font-style: italic;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     PLATE + CAPTION — Freedom Money as a figure caption, not a card.
+     ─────────────────────────────────────────────────────────────────
+     The boxed credit-card treatment (carved frame, frosted ground, locked
+     1.586 aspect) competed with the engraving and sat in a corner the
+     composition never leads to. Replaced: the engraving is a clean,
+     unobstructed figure plate, and the definition is captioned in the
+     band beneath it as a CENTERED FINE-PRESS COLOPHON — a single thin gold
+     rule after the image, "freedom money" centered below it, and the
+     enumerated senses in one centered column (title-page register, not a
+     UI card; consistent with the private-press position). Overrides the
+     boxed-card rules above (later source order); !important only where it
+     must beat the frame pseudo-elements. */
+  .home-hero-cards {
+    position: absolute;
+    left: 0;
+    right: 0;
+    /* Flush with the bottom guide (was 30px) — the band's scrim now
+       meets the plate's bottom edge, so no untinted strip of engraving
+       peeks out beneath the caption. */
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .home-hero-cards .home-margin-card {
+    width: 100%;
+    aspect-ratio: auto;
+    border: 0;
+    /* Single thin gold rule after the image — muted brass (accent-gold at
+       ~0.5) reading as a fine-press title rule; the headword below is the
+       same gold at full strength. Brightens to full gold on hover — the
+       band is the page's primary action (routes to /work). */
+    border-top: 1px solid rgba(198, 161, 91, 0.5);
+    border-radius: 0;
+    /* Caption-band scrim — the engraving's busiest passage (foreground
+       rails + ties) runs straight through this band, and the senses were
+       dissolving into the crosshatching. A ground-tinted glass panel
+       (no border, no box) keeps the entry legible; the gold rule above
+       stays the band's only drawn edge, so it reads as a colophon
+       sitting in shadow rather than a UI card. */
+    background: rgba(var(--vellum-rgb), 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    box-shadow: none;
+    /* 32px horizontal inset clears the sidebar-seam guide line the
+       band's left edge sits on — the headword's "f" no longer collides
+       with the vertical rule. */
+    padding: 0 32px 22px;
+    overflow: visible;
+    transition:
+      background-color 220ms ease,
+      border-top-color 220ms ease,
+      backdrop-filter 220ms ease,
+      -webkit-backdrop-filter 220ms ease;
+  }
+
+  /* Hover/focus — the band declares itself: rule ignites to full gold
+     and the scrim drops to a thin floor, revealing the rails through
+     the caption right before activation ("entering the rails" — same
+     reveal the old frosted-glass card used). The 0.25 floor (instead
+     of fully transparent) keeps the senses legible for as long as the
+     cursor rests on the band — the reveal reads, the text survives. */
+  .home-hero-cards .home-margin-card:hover,
+  .home-hero-cards .home-margin-card:focus-visible {
+    border-top-color: var(--accent-gold);
+    background-color: rgba(var(--vellum-rgb), 0.25);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Kill the carved double-frame + frosted-glass overlay of the boxed card. */
+  .home-hero-cards .home-margin-card::before,
+  .home-hero-cards .home-margin-card::after,
+  .home-hero-cards .home-margin-card-body::before {
+    display: none !important;
+  }
+
+  /* Glossary-entry band: headword on the left, senses flowing right in
+     two columns — term-then-definition reading order, like a typeset
+     dictionary entry. align-items: baseline locks the headword's
+     baseline to the first sense row's baseline so the band reads as
+     one typeset entry, not a heading beside a list. */
+  .home-hero-cards .home-margin-card-body {
+    display: grid;
+    /* Both columns content-sized (was auto 1fr) and the track group
+       centered — the headword + senses block floats in the middle of
+       the band with equal space to the left and right edges, like a
+       centered colophon line. The 1fr track had pinned the group to
+       the band's left padding and dumped all the slack on the right. */
+    grid-template-columns: auto auto;
+    justify-content: center;
+    /* Top-aligned (was baseline) — the senses' first line starts where
+       the headword starts, so headword + 2×2 senses read as one block
+       hanging from the gold rule. Baseline alignment dropped the senses
+       to the 40px headword's baseline, leaving dead air above them. */
+    align-items: start;
+    /* Headword-to-senses gap — tightened twice (96px ceiling → 80 → 48):
+       the entry reads as one continuous line, headword flowing into its
+       senses, rather than two columns with a gutter between them. The
+       reclaimed width also goes to the sense columns (anti-wrap). */
+    column-gap: clamp(24px, 2.5vw, 48px);
+    padding: 18px 0 0;
+  }
+
+  .home-hero-cards .home-margin-card-title-row {
+    justify-content: flex-start;
+    /* Drop the boxed card's 30px OED indent — the numerals now hang
+       inside the senses zone, not under the headword. Also drop the
+       boxed card's 10px padding-top so the headword and the senses
+       genuinely share a top edge under align-items: start. */
+    padding-left: 0;
+    padding-top: 0;
+  }
+
+  /* Press state — the band depresses like type under the press: the
+     scrim deepens a step and the entry drops 1px. The most button-
+     defining feedback there is, and on-metaphor for a print shop. */
+  .home-hero-cards .home-margin-card:active {
+    background-color: rgba(var(--vellum-rgb), 0.66);
+  }
+
+  .home-hero-cards .home-margin-card:active .home-margin-card-body {
+    transform: translateY(1px);
+  }
+
+  /* Senses clarify on hover — the cards' dimmed-at-rest/clarifies-on-
+     hover register applied to the reveal: as the scrim thins and the
+     image brightens behind the band, the sense text lifts from
+     parchment to cream so the entry sharpens with the reveal instead
+     of washing out against it. (The Zcash sense keeps its own gold —
+     its color rule is more specific than this lift.) */
+  .home-hero-cards .home-margin-card-points li {
+    transition: color 220ms ease;
+  }
+
+  .home-hero-cards .home-margin-card:hover .home-margin-card-points li,
+  .home-hero-cards .home-margin-card:focus-visible .home-margin-card-points li {
+    color: var(--ink-hover);
+  }
+
+  .home-hero-cards .home-margin-card-title {
+    /* Headword scale — entry headword for the band, clearly subordinate
+       to the 76px hero positioning above (~1.9:1 at desktop). */
+    font-size: clamp(30px, 2.6vw, 40px);
+    line-height: 1.05;
+    text-align: left;
+  }
+
+  .home-hero-cards .home-margin-card-pronunciation {
+    text-align: left;
+    padding-left: 0;
+  }
+
+  /* Senses in a 2×2 grid, COLUMN-MAJOR (1,2 down the left column;
+     3,4 down the right) — dictionary convention: numbered senses scan
+     down a column, not across rows. minmax(0, 1fr) lets long senses
+     wrap instead of blowing out the track. */
+  .home-hero-cards .home-margin-card-points {
+    display: grid;
+    grid-template-rows: repeat(2, auto);
+    /* Content-sized columns (was minmax(0, 1fr)). With 1fr tracks the
+       columns stretched to fill the band and the visible gutter between
+       senses 1,2 and 3,4 ballooned to ~150px of slack — wildly out of
+       proportion with the tightened headword gap. max-content sizes each
+       column to its longest sense, so the gutter IS the column-gap
+       below; minmax(0, …) still lets the tracks shrink (and the text
+       wrap) when a narrow viewport genuinely can't fit them. */
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    grid-auto-flow: column;
+    /* Gestalt proximity: this is a WITHIN-group gap (sense column to
+       sense column), so it must stay smaller than the headword→senses
+       gap on the body grid (clamp(24px, 2.5vw, 48px) — the BETWEEN-
+       groups boundary). The previous clamp(32px, 3vw, 56px) inverted
+       that: senses sat further from each other than from the headword,
+       gluing column one to the term. Ratio now ≈ 1 : 1.25 at full
+       width (29px vs 36px). */
+    column-gap: clamp(24px, 2vw, 40px);
+    row-gap: 12px;
+    margin: 0;
+  }
+
+  /* Narrower viewports: collapse both rails below the hero rather than
+     trying to keep them in the gutters. The content-end-pad shrinks
+     below 1200px, and at some point the cards would overlap the hero. */
+  @media (max-width: 1180px) {
+    /* Drop the desktop-only content-offset (the wide 2nd–5th guide
+       spread). Above 1180px the content lane is optically centered with
+       a 223px gutter on each side; below it, that offset is just dead
+       padding that collapses the reading column — at ~1060px the lane
+       fell to ~400px, and near 768px to ~110px, squishing every page
+       (hero wrapped to 3 lines, the freedom-money card to a sliver).
+       This completes the intent the .home-lane reset only half-did:
+       below 1180 the column falls back to sidebar + frame-margin on the
+       left and frame-margin on the right. The ≤767 block overrides these
+       again with the mobile gutter. */
+    .page-frame {
+      --content-start: calc(var(--sidebar-seam) + var(--frame-margin));
+      --content-end-pad: var(--frame-margin);
+    }
+
+    .home-margin-rail,
+    .home-margin-rail-left,
+    .home-margin-rail-right {
+      position: static;
+      left: auto;
+      right: auto;
+      width: 100%;
+      max-width: var(--content-width);
+      flex-direction: row;
+      flex-wrap: wrap;
+      margin-top: 48px;
+    }
+
+    .home-margin-card {
+      flex: 1 1 200px;
+    }
+
+    /* Reset the lane's negative margin and widened width on narrow
+       viewports — the 2nd-5th guide spread is desktop-only chrome.
+       Below this breakpoint the lane falls back to the standard
+       content-width column. */
+    .home-lane {
+      margin-left: 0;
+      width: 100%;
+      max-width: var(--content-width);
+    }
+
+    /* Stack the card in flow below the hero (not the desktop bottom-right
+       poster, which strands it on a tall iPad). position: static drops it
+       into the lane's flex column after the hero; transform: none clears
+       the inherited translate (transforms apply to static elements too);
+       margin centers it horizontally with a 40px gap below the hero.
+       The lane stays top-anchored (flex-start) and the hero keeps its
+       base margin-top, so the hero shares the V logo's top baseline —
+       brand mark + title + card read as one upper-tier title block, with
+       the rails engraving filling the lower portion as the frontispiece
+       illustration. */
+    .home-hero-cards {
+      position: static;
+      transform: none;
+      /* Card width: content's natural measure (longest sense ~380px +
+         numeral column + interior padding), shrinking with the
+         viewport. Centered in the VIEWPORT, not the lane: the lane is
+         asymmetric below 1180 (content-start 208 left vs 48 right), so
+         `margin: auto` beached the card rightward on iPad Air/Mini
+         widths where lane ≈ card. The margin-left calc translates
+         viewport-center into lane coordinates. */
+      --entry-card-w: min(520px, calc(100vw - 128px));
+      width: var(--entry-card-w);
+      max-width: none;
+      margin: 40px 0 0 calc(50vw - var(--content-start) - var(--entry-card-w) / 2);
+    }
+
+    /* Below 1180 the entry renders as a framed CARD — a double gold
+       rule (1.5px border + thinner inset outline) around the whole
+       rectangle, floating over the full-bleed engraving like a
+       tipped-in plate. The desktop band's open bottom belongs to the
+       registered-plate composition above 1180, where the plate's own
+       bottom rule closes the band; here the entry floats mid-image
+       with no architecture to borrow, so it carries its own frame.
+       The ≤767 block inherits this frame and only tightens padding. */
+    .home-hero-cards .home-margin-card {
+      border: 1.5px solid rgba(198, 161, 91, 0.65);
+      outline: 1px solid rgba(198, 161, 91, 0.3);
+      outline-offset: -8px;
+      padding: 0;
+    }
+
+    /* iPad headline — two balanced lines, like the phone. Released
+       from nowrap and scaled UP (7vw: ~54px at 768, capped at 68px
+       from 972 up); text-wrap: balance splits it evenly ("Building
+       the / rails of freedom"). At the desktop single-line scale
+       (4.5vw) the headline read as a thin strip stranded over the
+       full-bleed image; two big lines own the sky region the way the
+       plate composition owns it above 1180. Ceiling matches the
+       desktop tier's 68px so a smaller viewport never renders a
+       LARGER headline than desktop does (the old 72px ceiling
+       inverted the scale across the 1180 breakpoint — it existed to
+       push the text ~3px past the lane so it would wrap; max-width
+       now forces that break deterministically instead: the headline
+       string runs ~10.96em at any font size, so a 10.5em cap always
+       breaks it regardless of font metrics). */
+    .home-hero-positioning {
+      font-size: clamp(44px, 7vw, 68px);
+      line-height: 1.1;
+      white-space: normal;
+      max-width: 10.5em;
+      /* Same viewport-centering correction as the card below: the h1
+         is text-centered within the asymmetric lane (208 left / 48
+         right), which put the headline's axis ~80px right of the
+         viewport-centered card on Air/Mini. translateX shifts by
+         (viewport-center − lane-left − half own width); 50% here
+         refers to the element's own width. */
+      transform: translateX(calc(50vw - var(--content-start) - 50%));
+    }
+
+    /* iPad: the lane is too narrow for headword-beside-senses, so the
+       headword stacks ABOVE. Padding sized for the card frame (clears
+       the 8px inset rule).
+       fit-content + auto margins center the TEXT GROUP inside the
+       card: the group's width is its longest line, so the gap from
+       the card's left rule to the text equals the gap from the
+       longest sense's end to the right rule — optically symmetric
+       instead of left-pinned with all the rag on the right.
+       max-width guards tiny widths where a sense must wrap. */
+    .home-hero-cards .home-margin-card-body {
+      grid-template-columns: 1fr;
+      row-gap: 16px;
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 36px 24px 40px;
+    }
+
+    /* Senses: single stacked column WITH numerals — the 2×2 grid was
+       desktop-band composition; in the card the senses read straight
+       down, one per line, numerals hanging like the dictionary entry
+       they costume. (≤767 keeps its own override that also hides the
+       numerals for width.) */
+    .home-hero-cards .home-margin-card-points {
+      grid-column: 1;
+      grid-row: auto;
+      grid-template-rows: none;
+      grid-template-columns: 1fr;
+      grid-auto-flow: row;
+      row-gap: 14px;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1180px) {
+    .home-hero-positioning {
+      transform: translateX(
+        calc((100vw + var(--sidebar-seam) - var(--frame-margin)) / 2 - var(--content-start) - 50%)
+      );
+    }
+
+    .home-hero-cards {
+      --entry-card-w: min(400px, calc(100vw - 192px));
+      width: var(--entry-card-w);
+      max-width: none;
+      margin-left: calc(
+        (100vw - var(--sidebar-seam) - var(--frame-margin) - var(--entry-card-w)) / 2 -
+          var(--frame-margin)
+      );
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .home-hero-cards .home-margin-card-body {
+      padding-top: 38px;
+      padding-bottom: 38px;
+    }
+  }
+
+  .work-roadmap-lane {
+    max-width: var(--content-width);
+  }
+
+  .work-roadmap {
+    position: relative;
+    /* Section breath: 80px margin-top + the previous section's 40px
+       padding-bottom = 120px visible gap. Same math applies between
+       roadmap and .work-current below. */
+    margin-top: 80px;
+    border-top: 0;
+    /* Bottom padding absorbs the flex-layout overflow — page-body's flex:1
+       allocation undersizes by ~40px relative to the table's natural height,
+       which would otherwise cause the last row to overlap page-end-space.
+       This ensures the bottom gap matches the top gap (160px). */
+    padding-bottom: 40px;
+  }
+
+  /* Section eyebrow as left-gutter marginalia, mirroring the capacity-
+     comparison eyebrow above and the team page's FOUNDER / ENGINEERS
+     pattern. Absolute positioning keeps the table flush against its top. */
+  .work-roadmap-eyebrow {
+    position: absolute;
+    top: 28px;
+    right: calc(100% + 32px);
+    margin: 0;
+    white-space: nowrap;
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  /* Current work — sibling section after the roadmap. Position: relative
+     so the eyebrow can sit in the left gutter as marginalia (matching
+     the .work-roadmap-eyebrow pattern); the list + body flow normally
+     in the content lane.
+
+     Typography: sans (inherits from <body>), matching the page intro
+     caption. Brand rule — serif is for display + definitional content
+     (page titles, hero positioning, freedom money aphorisms); sans is
+     for prose. The current-work list items are operational descriptions
+     (prose), not aphorisms, so they belong in sans. Focal weight comes
+     from the numbered markers and ink color, not from the typeface. */
+  .work-current {
+    position: relative;
+    /* 80px margin-top + roadmap's 40px padding-bottom = 120px visible gap,
+       matching the capacity → roadmap transition above. */
+    margin-top: 80px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .work-current-eyebrow {
+    position: absolute;
+    top: 4px;
+    right: calc(100% + 32px);
+    margin: 0;
+    white-space: nowrap;
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  .work-current-list {
+    counter-reset: current-work;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .work-current-list li {
+    position: relative;
+    counter-increment: current-work;
+    padding-left: 36px;
+    color: var(--ink);
+  }
+
+  /* Annotation system — manuscript gloss in the right gutter, anchored
+     to a term in the body by a superscript asterisk. Single annotation
+     per item for now; extend the data shape (parts array) if multiple
+     annotations land in one item later.
+
+     Anchor: superscript asterisk in bright lapis mono, matching the marginalia
+     voice. Sits inline with the body text.
+
+     Marginalia: italic mono bright lapis in the right gutter (between the 4th
+     and 5th vertical guides), top-aligned to the li it glosses, with a
+     hairline rule above (same parchment-22 chapter-mark pattern as the
+     left-gutter eyebrows). Prefixed with `*` matching the anchor so the
+     eye links them. */
+  .annotation-target {
+    /* No visual treatment yet — keeps the term legible as body text.
+       Hook is here so a hover/active highlight can be added later
+       without re-wiring markup. */
+  }
+
+  .annotation-anchor {
+    color: var(--lapis);
+    font-family: var(--font-mono);
+    font-size: 0.7em;
+    margin-left: 0.1em;
+    vertical-align: super;
+    line-height: 0;
+  }
+
+  /* Right-gutter gloss (desktop). The same annotation that collapses to
+     a footnote on mobile (.work-current-footnotes) surfaces here as
+     manuscript marginalia: italic mono bright-lapis in the right gutter
+     (between the 4th and 5th vertical guides), top-aligned to the <li>
+     it glosses. When the annotation carries an href it renders as
+     <a class="…-link"> so the external reference (e.g. the PIR write-up)
+     is reachable from the gutter, not only from the mobile footnote.
+     Absolutely positioned inside the position:relative <li>; left:100%
+     drops it just past the lane's right edge into the gutter, mirroring
+     .annotation-marginal-image's geometry. */
+  .annotation-marginalia {
+    position: absolute;
+    top: 4px;
+    left: 100%;
+    width: var(--content-offset);
+    margin: 0;
+    padding: 0 12px;
+    color: var(--lapis);
+    font-family: var(--font-mono);
+    font-style: italic;
+    font-size: 12px;
+    line-height: 16px;
+    text-decoration: none;
+  }
+
+  /* Chapter-mark hairline above the gloss — same short parchment rule as
+     the left-gutter eyebrows, offset by the 12px gutter inset so it
+     starts flush with the marginalia text rather than the gutter edge. */
+  .annotation-marginalia::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    width: 32px;
+    height: 1px;
+    background: var(--parchment-22);
+  }
+
+  .annotation-marginalia-mark {
+    margin-right: 4px;
+  }
+
+  .annotation-marginalia-tail {
+    white-space: nowrap;
+  }
+
+  /* Unicode ↗ glyph — kept as a text character so it wraps with the
+     preceding word automatically. Sized larger than the body text so
+     it reads as a deliberate link affordance rather than a typographic
+     accident. Negative vertical-align pulls it back down to sit roughly
+     on the body's baseline. */
+  .annotation-marginalia-arrow {
+    font-size: 1.4em;
+    vertical-align: -2px;
+  }
+
+  /* Linked variant — same visual register as the static note but
+     responds to hover. Gold on hover matches the system's activation
+     color (used for nav hover and the V logo). */
+  .annotation-marginalia-link {
+    transition: color 180ms ease;
+  }
+
+  .work-current-footnotes {
+    display: none;
+  }
+
+  .annotation-marginalia-link:hover,
+  .annotation-marginalia-link:focus-visible {
+    color: var(--accent-gold);
+    outline: none;
+  }
+
+  /* Marginal image — engraved sigil rendered in the right gutter
+     below the annotation gloss. Positioned absolute relative to the
+     same parent <li> as the annotation, so it sits in the same right
+     margin column. Centered horizontally within the gutter (between
+     the 4th and 5th vertical guides) via equal padding on both sides
+     instead of the marginalia's left-only inset. */
+  .annotation-marginal-image {
+    position: absolute;
+    top: 56px;
+    left: 100%;
+    width: var(--content-offset);
+    margin: 0;
+    padding: 0 12px;
+    text-align: center;
+  }
+
+  .annotation-marginal-image img {
+    display: inline-block;
+    width: 100%;
+    max-width: calc(var(--content-offset) - 24px);
+    height: auto;
+    /* Subtle screen blend integrates the cream stamp paper with the
+       dark vellum so the white background doesn't read as a hard
+       rectangle pasted onto the page. */
+    mix-blend-mode: screen;
+    opacity: 0.85;
+  }
+
+  /* Tablet annotation behavior — iPad-width lanes do not have enough
+     stable right gutter for desktop marginalia. Match mobile: suppress
+     gutter notes/images and surface the same annotations in the footnote
+     block below the current-work list. */
+  @media (max-width: 1180px) {
+    .annotation-marginalia,
+    .annotation-marginal-image {
+      display: none;
+    }
+
+    .work-current-footnotes {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 24px 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--lapis);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 15px;
+    }
+  }
+
+  .work-current-list li::before {
+    content: counter(current-work) ".";
+    position: absolute;
+    top: 4px;
+    left: 0;
+    color: var(--lapis);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    line-height: 20px;
+  }
+
+  /* Body — elaboration prose. Matches the page intro caption's register
+     exactly (sans 16px / lh 24px), one tier dimmer at parchment-78 so
+     the intro remains the page's primary argumentative paragraph and
+     this reads as supporting elaboration.
+
+     No rule above: the paragraph elaborates on the same work the list
+     names (wallet libraries, PIR queries, governance), so it's a
+     continuation, not a new field. A full-width hairline here borrowed
+     the weight of the roadmap's table-row separators and overstated the
+     break; the parchment-78 tone demotion + the 28px gap carry the
+     hierarchy instead ("emphasis by tone, not width"). */
+  .work-current-body {
+    margin: 28px 0 0;
+    color: var(--parchment-78);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+
+  /* Metrics-as-rows roadmap layout: 1 metric-label column + 3 equal stage
+     columns. Reading left-to-right = past-to-future, with emphasis handled by
+     tone rather than width. Constrained to the 786px reading lane so Work
+     sits in the same column rhythm as Research and Team. */
+  .work-roadmap-row {
+    display: grid;
+    grid-template-columns: 120px repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    border-bottom: 1px solid var(--parchment-22);
+    padding: 28px 0;
+    /* Scroll-reveal: rows fade up as they enter the viewport. The
+       .is-in-view class is added by an IntersectionObserver in WorkContent.
+       Per-row stagger via --reveal-delay (set inline by JS) gives the cascade
+       a clear top-to-bottom rhythm rather than a coordinated batch. */
+    opacity: 0;
+    transform: translateY(40px);
+    transition:
+      opacity 1000ms ease-out,
+      transform 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .work-roadmap-row.is-in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .work-roadmap-row:last-child {
+    border-bottom: 0;
+  }
+
+  /* Scroll-reveal on section eyebrows — same pattern as work-roadmap-row,
+     applied to the three section labels (CAPACITY GOAL, HOW WE GET THERE,
+     CURRENT WORK). Each fades + translates into its gutter position when
+     it enters the viewport, giving sections a quiet arrival cue without
+     adding new motion vocabulary. The IntersectionObserver in WorkContent
+     handles class application. */
+  .capacity-comparison-eyebrow,
+  .work-roadmap-eyebrow,
+  .work-current-eyebrow {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+    transition:
+      opacity 700ms ease-out,
+      transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Active-section state — when the section is in the scroll focus
+     band, its eyebrow shifts to lapis. Mirrors /team's roster active-name pattern.
+     Uses the unified --lapis (#e8e8e8) — well above --parchment-62, so the
+     active state reads as "highlighted" rather than "dimmed" (matches
+     footer links + research dates + work numerals). Toggled by the
+     IntersectionObserver in WorkContent. */
+  .capacity-comparison[data-active] .capacity-comparison-eyebrow,
+  .work-roadmap[data-active] .work-roadmap-eyebrow,
+  .work-current[data-active] .work-current-eyebrow {
+    color: var(--lapis);
+    transition: color 240ms ease;
+  }
+
+  .capacity-comparison-eyebrow.is-in-view,
+  .work-roadmap-eyebrow.is-in-view,
+  .work-current-eyebrow.is-in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Respect user preference: no motion if requested. Rows + eyebrows
+     render at their final state immediately, no transition. */
+  @media (prefers-reduced-motion: reduce) {
+    .work-roadmap-row,
+    .capacity-comparison-eyebrow,
+    .work-roadmap-eyebrow,
+    .work-current-eyebrow {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* Header row — stage cells live here. Tightened bottom padding so the
+     header row sits closer to the first data row. */
+  .work-roadmap-header {
+    padding-top: 28px;
+    padding-bottom: 24px;
+  }
+
+  /* Stage cells use flex-column with content pushed to the bottom — so
+     headings on all three columns baseline-align even when one column
+     has a kicker above it (Today) and the others don't. */
+  .work-roadmap-header .work-roadmap-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .work-roadmap-label,
+  .work-roadmap-numeral {
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  .work-roadmap-numeral {
+    margin-bottom: 14px;
+    /* Numerals will inherit the column's graduated brightness via the
+       nth-child rules below — so each column is a single tonal event from
+       top (header) to bottom (last metric row). */
+  }
+
+  .work-roadmap-cell {
+    min-width: 0;
+  }
+
+  /* Header row cells — stage headings get display-size serif. Sized
+     noticeably larger than the data cell values (26px) so the column
+     headings clearly anchor their columns rather than reading as peers. */
+  .work-roadmap-header .work-roadmap-cell h2 {
+    font-size: 28px;
+    letter-spacing: -0.018em;
+    line-height: 32px;
+  }
+
+  /* Stage kicker (Pre-Valar · Pre-Tachyon) — small caps line ABOVE the
+     stage heading. Editorial kicker / eyebrow tier: 11px mono, slightly
+     wider tracking than the 13px metadata tier to keep the small caps
+     legible. Distinct semantic role from primary mono labels. */
+  .work-roadmap-header .work-roadmap-cell p {
+    margin: 0 0 8px;
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    line-height: 14px;
+    text-transform: uppercase;
+  }
+
+  .work-roadmap-cell h2 {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 28px;
+  }
+
+  .work-roadmap-unit {
+    display: inline-block;
+    margin-left: 0.24em;
+    color: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.42em;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  /* Column-based graduation — THREE axes: brightness, size, and weight
+     all scale across the timeline columns. Dim small past (Today),
+     mid-bright medium present (End of 2026), full-ink large bold
+     destination (End of 2027). The 2027 column visually dominates as
+     the page's punchline. Header row's stage headings inherit the color
+     graduation but keep a constant size — sizes graduate in the data
+     rows only, where the contrast carries the argument. */
+  .work-roadmap-cell:nth-child(2) h2,
+  .work-roadmap-cell:nth-child(2) .work-roadmap-numeral {
+    color: var(--parchment-42);
+  }
+
+  .work-roadmap-row:not(.work-roadmap-header) .work-roadmap-cell:nth-child(2) h2 {
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .work-roadmap-cell:nth-child(3) h2,
+  .work-roadmap-cell:nth-child(3) .work-roadmap-numeral {
+    color: var(--parchment-78);
+  }
+
+  .work-roadmap-row:not(.work-roadmap-header) .work-roadmap-cell:nth-child(3) h2 {
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  .work-roadmap-cell:nth-child(4) h2,
+  .work-roadmap-cell:nth-child(4) .work-roadmap-numeral {
+    color: var(--ink);
+  }
+
+  .work-roadmap-row:not(.work-roadmap-header) .work-roadmap-cell:nth-child(4) h2 {
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 36px;
+    letter-spacing: -0.022em;
+  }
+
+  /* Destination value print effect — keep the roadmap table in its
+     original color system, with the letterpress texture reserved for the
+     End of 2027 data values. */
+  .work-roadmap-row:not(.work-roadmap-header) .work-roadmap-cell:nth-child(4) h2 {
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+  }
+
+  /* Notes under data values — supporting body content, matched to the
+     body-text register used across the site (14px / 20px line-height /
+     parchment-62). Same size as Research and Team bios; demoted in
+     brightness because they're annotations to a data cell rather than
+     primary content. The mono caps labels stay distinct via family/case. */
+  .work-roadmap-cell p {
+    max-width: 320px;
+    margin: 10px 0 0;
+    color: var(--parchment-62);
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+   * Capacity Comparison — destination block below the roadmap.
+   *
+   * The roadmap shows the trajectory (3 → 100 → 2,000 tps); this block
+   * shows what it points at — Visa+Mastercard combined capacity (existing
+   * system) vs. Zcash beyond combined, shielded (destination).
+   *
+   * Two cards, one metric (capacity), shared dot-meter scale so the eye
+   * reads relative magnitude in one glance:
+   *   • V+MC card is "muted" — parchment-tier dots, parchment-dimmed text,
+   *     positioned as the existing reference the page is racing past.
+   *   • Zcash card is "primary" — lapis-bright dots (the system's data-
+   *     point color), full ink text. Lapis-on-parchment-on-vellum carries
+   *     the shielded signature: same number, different material.
+   *
+   * Dots laid out as a CSS grid; columns set via --meter-cols inline style
+   * on the parent. Filled dots use the card's tone color; empty dots use
+   * a tier-down parchment alpha. ──────────────────────────────────── */
+  /* Hero scale — the CapacityComparison sits above the roadmap table as
+     the page's visual statement. More vertical breath, more typographic
+     weight in the values, separator rule below to set off the table. */
+  .capacity-comparison {
+    position: relative;
+    padding-top: 16px;
+    /* 40px padding-bottom is the section's internal breath; the next
+       section's margin-top: 80 contributes the rest to total 120 visible. */
+    padding-bottom: 40px;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+  }
+
+  /* Section eyebrow as left-gutter marginalia, mirroring the team page's
+     FOUNDER / ENGINEERS labels. Absolute positioning takes it out of the
+     content flow so the cards grid below sits at the section's top padding.
+     Top value (51px) baseline-aligns the eyebrow's cap-top with the V+MC
+     card's Plantijn label cap-top: section padding (16px) + card padding
+     (28px) = 44px is the label's element top, plus ~7px of line-box
+     leading above the Plantijn cap-top = ~51px. Mono caps eyebrow has
+     less leading (~3px), so its element top = 51 - 3 = ~48px. */
+  .capacity-comparison-eyebrow {
+    position: absolute;
+    top: 48px;
+    right: calc(100% + 32px);
+    margin: 0;
+    white-space: nowrap;
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  /* Tablet section-title behavior — iPad-width layouts use the mobile
+     inline title treatment instead of left-gutter marginalia. */
+  @media (max-width: 1180px) {
+    .capacity-comparison-eyebrow,
+    .work-roadmap-eyebrow {
+      position: static;
+      margin: 0 0 16px;
+    }
+
+    .work-current-eyebrow {
+      position: static;
+      margin: 0 0 18px;
+    }
+  }
+
+  .capacity-comparison-description {
+    margin: 0;
+    max-width: 640px;
+    color: var(--parchment-78);
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .capacity-comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 64px;
+  }
+
+  .capacity-card {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 32px 36px;
+    border-radius: 6px;
+  }
+
+  /* Card mark — small brand logomark above the big number, like Celestia's
+     card-top brand icon. Inherits color from the surrounding card via
+     currentColor in the SVG fill; sized small (32px) so it identifies
+     rather than dominates. */
+  .capacity-card-mark {
+    display: flex;
+    align-items: center;
+    color: var(--lapis);
+    margin-bottom: -8px;
+  }
+
+  .capacity-card-logo {
+    width: 32px;
+    height: 32px;
+    display: block;
+  }
+
+  .capacity-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Brand label — Plantijn serif at 22px (matches team-page name size).
+     Treats Visa+Mastercard and Zcash as editorial subjects, not as
+     metadata tags. Natural case (no uppercase), no mono-caps register;
+     the brand name shares the same family as the big number below it,
+     creating typographic kinship between subject and data. */
+  .capacity-card-label {
+    margin: 0;
+    color: var(--parchment-62);
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 30px;
+  }
+
+  .capacity-card-role {
+    margin: 0;
+    color: var(--parchment-62);
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .capacity-card-value {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0;
+    /* Unit (tps) always stays inline next to the number — never wraps below.
+       The number scales via clamp; the unit stays small and trailing. */
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .capacity-card-number {
+    font-family: var(--font-serif);
+    /* Locked to the 4.5vw display family (hero, page titles). Was
+       5.2vw — close enough to consolidate without losing the visible
+       scale, and removes a unique multiplier from the type system. */
+    font-size: clamp(48px, 4.5vw, 72px);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .capacity-card-unit {
+    color: var(--parchment-78);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    line-height: 16px;
+    text-transform: uppercase;
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+  }
+
+  .capacity-card-caption {
+    margin: 0;
+    color: var(--parchment-62);
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  /* Dot meter. Each card's grid uses --meter-cols (default 30) to wrap
+     the dots into rows. Dots are small circles; filled dots carry the
+     card's tone color, empty dots a low-alpha parchment. */
+  .capacity-meter {
+    display: grid;
+    grid-template-columns: repeat(var(--meter-cols, 30), 1fr);
+    gap: 5px 6px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .capacity-dot {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    max-width: 9px;
+    border-radius: 50%;
+  }
+
+  /* MUTED card (Visa + Mastercard) — dimmed throughout. Number drops
+     to parchment-62 (clearly demoted but still readable); dots fall to
+     parchment-33 so they read as "the reference, faded into the page."
+     No background fill — flat surface, no card boundary. The lack of
+     presence IS the signal: this is what's being raced past. */
+  .capacity-card-muted .capacity-card-label,
+  .capacity-card-muted .capacity-card-role,
+  .capacity-card-muted .capacity-card-caption {
+    color: var(--parchment-42);
+  }
+
+  .capacity-card-muted .capacity-card-number {
+    color: var(--parchment-62);
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+  }
+
+  .capacity-card-muted .capacity-card-unit {
+    color: var(--parchment-42);
+  }
+
+  .capacity-card-muted .capacity-dot-filled {
+    background: var(--parchment-33);
+  }
+
+  .capacity-card-muted .capacity-dot-empty {
+    background: transparent;
+    border: 1px solid var(--parchment-22);
+  }
+
+  /* PRIMARY card (Zcash) — lapis dots rendered as diamonds (rotated
+     squares with sharp corners) carry the shielded signature. Surface
+     presence comes from a lapis border drawn with the print-distort
+     filter — the outline reads as a hand-drawn / printing-press frame
+     rather than a flat CSS box. No fill: the card is *outlined*, not
+     *washed*. Same vocabulary as the page title's letterpress treatment. */
+  .capacity-card-primary {
+    position: relative;
+  }
+
+  .capacity-card-primary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--lapis);
+    border-radius: 6px;
+    filter: url("#title-print-distort");
+    pointer-events: none;
+  }
+
+  .capacity-card-primary .capacity-card-mark,
+  .capacity-card-primary .capacity-card-label {
+    color: var(--accent-gold);
+  }
+
+  .capacity-card-primary .capacity-card-number {
+    color: var(--ink);
+    /* Print-distortion on the destination number — same SVG filter as
+       the page title and the End of 2027 roadmap column. 60,000 visually
+       "presses into the vellum," reinforcing it as the page's punchline
+       claim alongside the title's letterpress treatment. */
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+  }
+
+  .capacity-card-primary .capacity-card-unit {
+    color: var(--lapis);
+  }
+
+  .capacity-card-primary .capacity-dot {
+    border-radius: 0;
+    transform: rotate(45deg);
+  }
+
+  .capacity-card-primary .capacity-dot-filled {
+    background: var(--lapis);
+  }
+
+  .capacity-card-primary .capacity-dot-empty {
+    background: var(--parchment-11);
+  }
+
+  /* Tablet capacity layout — iPad-width two-column cards leave the meter
+     too narrow for 30 diamond positions, collapsing each Zcash diamond to
+     sub-pixel size. Match mobile: stack cards and rebalance the 60-position
+     meter into 20 columns. */
+  @media (max-width: 1180px) {
+    .capacity-comparison-grid {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+
+    .capacity-meter {
+      grid-template-columns: repeat(20, 1fr);
+    }
+
+    .capacity-dot {
+      max-width: 10px;
+    }
+  }
+
+  .team-section {
+    position: relative;
+    padding-bottom: 0;
+  }
+
+  .team-lane {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Right-gutter marginalia — atelier engraving sits beside the roster
+     in the outer margin (manuscript convention). Spans the full width
+     between the 4th and 5th vertical guides: 4th sits at content-end
+     (= team-section's right edge, = `left: 100%`), 5th sits at frame-
+     margin from the right. Gap between them equals --content-offset,
+     which is the rail width pattern used by home-margin-rail-right. */
+  .team-illumination {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: var(--content-offset);
+    pointer-events: none;
+  }
+
+  .team-illumination img {
+    display: block;
+    width: 100%;
+    height: auto;
+    opacity: 0.82;
+  }
+
+  /* Editorial roster — flat structure, no founder elevation. Each row
+     is a uniform template: name + X/GitHub links on the head baseline,
+     bio below.
+
+     Two-column editorial directory — Heritage Space pattern.
+     Column 1 (narrow): name as a sidebar label / scroll anchor.
+     Column 2 (wide): bio paragraph + X / GitHub links beneath.
+     The name gets a highlighter-mark on row hover — illuminated-
+     manuscript convention transposed to a printed-paper effect.
+
+     Carved-in rules between rows match the article-row deboss divider on
+     the research page (shared .article-row::before / .team-roster-row
+     ::before rule). Each row carries a top rule via its ::before, so the
+     first row's rule replaces the old container border-top and the last
+     row naturally has none. position: relative anchors that ::before. */
+  .team-roster-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    column-gap: 48px;
+    padding: 40px 0;
+  }
+
+  .team-roster-meta {
+    padding-top: 2px;
+  }
+
+  .team-roster-name {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 30px;
+  }
+
+  /* Inner mark — name text wrapped in an inline span so the active-state
+     treatment can apply directly to the text glyphs (color change + SVG
+     print-distort filter + letterpress text-shadow), not to a box behind
+     them. This matches the page title's treatment — the name becomes a
+     pressed-into-vellum mark when its row is scroll-active. */
+  .team-roster-name-mark {
+    display: inline;
+    color: inherit;
+    transition: color 240ms ease;
+  }
+
+  /* Role title under the name — the metadata register (mono caps,
+     parchment-62, 0.08em tracking), quieter than the lapis X/GitHub
+     links in the bio column. Sits in the narrow roster-meta column so
+     name and role read as one sidebar label. */
+  .team-roster-title {
+    margin: 10px 0 0;
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  /* Active state — name turns lapis-bright and gains the same letterpress
+     + print-distortion treatment as the page title. Active triggers when
+     the row is scroll-focused (data-active set by IntersectionObserver
+     in TeamContent) or when any descendant has keyboard focus. Lapis
+     ties the active name to the site's external-link / data-point
+     register (X / GitHub links also use lapis-bright). */
+  .team-roster-row[data-active] .team-roster-name-mark,
+  .team-roster-row:focus-within .team-roster-name-mark {
+    color: var(--lapis);
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+  }
+
+  .team-roster-content {
+    min-width: 0;
+    /* Right breathing room so bio + links don't run flush to the
+       team-illumination column on the right. Applied at the content
+       wrapper so both the bio and the X/GitHub links share the same
+       right edge. */
+    padding-right: 48px;
+  }
+
+  .team-roster-bio {
+    margin: 0;
+    max-width: 640px;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* X / GitHub links — matches the site's established metadata register
+     (mono caps, 13px, lapis-bright with 0.08em tracking). Same vocabulary
+     as research dates, work eyebrows, capacity TPS, roadmap row labels.
+     Type contrast (caps vs bio body) does the separation; no rule needed. */
+  .team-roster-links {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 24px 0 0;
+    color: var(--lapis);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  /* Middle-dot separator — quieter than the link text so it reads as
+     punctuation, not as a third item. */
+  .team-roster-sep {
+    color: var(--parchment-42);
+    font-style: normal;
+  }
+
+  .team-roster-link {
+    color: var(--lapis);
+    transition: color 180ms ease;
+  }
+
+  .team-roster-link:hover {
+    color: var(--accent-gold);
+  }
+
+  .team-roster-link:focus-visible {
+    outline: 1px solid var(--accent-gold);
+    outline-offset: 4px;
+  }
+
+  /* About-page contact line — closes the roster with a direct channel.
+     Shares the roster's carved-rule rhythm (parchment-22 hairline on
+     top) and its two-register composition: mono-caps parchment label,
+     lapis address with gold hover (the site's external-link register). */
+  .about-contact {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin: 0;
+    padding: 24px 0;
+    border-top: 1px solid var(--parchment-22);
+  }
+
+  .about-contact-label {
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  .about-contact-email {
+    color: var(--lapis);
+    font-size: 16px;
+    line-height: 24px;
+    transition: color 180ms ease;
+  }
+
+  .about-contact-email:hover {
+    color: var(--accent-gold);
+  }
+
+  .about-contact-email:focus-visible {
+    outline: 1px solid var(--accent-gold);
+    outline-offset: 4px;
+  }
+
+  .article-lane {
+    position: relative;
+  }
+
+  .article-row {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px var(--article-row-inset);
+  }
+
+  /* Carved-in field divider — the same deboss language as the freedom-
+     money card's inner rectangle (.home-margin-card::before): the line
+     itself is a DARK recess (reads as absent from the surface plane),
+     with a dark shadow band on the lit-from side and a parchment
+     highlight band on the opposite side. For a horizontal rule the
+     lighting axis is vertical — shadow above, parchment highlight below
+     — so the groove reads as pressed INTO the vellum rather than a rail
+     sitting on top of it. Single 1px line; the box-shadows render the
+     two depth bands outside it.
+
+     NB: deliberately NOT filtered with #title-print-distort. On display
+     type and the card's frame that feTurbulence displacement adds nice
+     letterpress imperfection, but on a thin horizontal rule it fragments
+     the line into a dashed perforation. The carved read here comes from
+     the directional shadow/highlight pair, not from the filter.
+
+     Shared with the /team roster dividers (.team-roster-row) so the two
+     field dividers stay identical — only the horizontal inset differs. */
+  .article-row::before,
+  .team-roster-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.7);
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.45),
+      0 1px 0 rgba(var(--parchment-rgb), 0.22);
+  }
+
+  .article-row::before {
+    left: var(--article-row-inset);
+  }
+
+  .team-roster-row::before {
+    left: 0;
+  }
+
+  .article-date {
+    flex: 0 0 96px;
+    padding-top: 4px;
+    color: var(--lapis);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    filter: url("#title-print-distort");
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+    transition: color 180ms ease;
+    white-space: nowrap;
+  }
+
+  .article-content {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .article-heading {
+    display: block;
+  }
+
+  .article-row h2 {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 30px;
+    transition: color 150ms ease-out;
+  }
+
+  .article-row p {
+    max-width: none;
+    margin: 16px 0 0;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 20px;
+    transition: color 150ms ease-out;
+  }
+
+  .article-arrow {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-left: 10px;
+    color: var(--lapis);
+    vertical-align: baseline;
+    transform: translateY(2px);
+    transition:
+      color 150ms ease-out,
+      transform 150ms ease-out;
+  }
+
+  .footer-arrow {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 4px;
+    color: currentColor;
+    opacity: 0.72;
+    vertical-align: baseline;
+    transform: translateY(1px);
+    transition:
+      color 180ms ease,
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .footer-link:hover .footer-arrow {
+    opacity: 1;
+    transform: translate(2px, -1px);
+  }
+
+  .article-row:hover .article-date,
+  .article-row:hover h2 {
+    color: var(--accent-gold);
+  }
+
+  .article-row:hover p {
+    color: var(--accent-gold);
+  }
+
+  .article-row:hover .article-arrow {
+    color: var(--accent-gold);
+    transform: translate(2px, -2px);
+  }
+
+  .article-row:focus-visible {
+    outline: 0;
+  }
+
+  .article-row:focus-visible::before {
+    background: var(--accent-gold);
+  }
+
+  .article-row:focus-visible .article-date,
+  .article-row:focus-visible h2,
+  .article-row:focus-visible p,
+  .article-row:focus-visible .article-arrow {
+    color: var(--accent-gold);
+  }
+
+  /* Print-distortion on hover/focus — same SVG filter as the page title.
+     Applied to the text-bearing elements (h2 contains the inline arrow,
+     so it cascades to the arrow too). Mimics the imperfect impression
+     of a real printing-press press as the row activates. */
+  .article-row:hover .article-date,
+  .article-row:hover h2,
+  .article-row:hover p,
+  .article-row:focus-visible .article-date,
+  .article-row:focus-visible h2,
+  .article-row:focus-visible p {
+    filter: url("#title-print-distort");
+  }
+
+  .article-row:focus-visible .article-arrow {
+    transform: translate(2px, -2px);
+  }
+
+  .footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    height: var(--footer-height);
+    min-height: var(--footer-height);
+    align-items: flex-start;
+    /* Footer composition: wordmark + copyright stay at the LEFT rail
+       (padding-left = frame-margin), under the sidebar V — keeping the
+       top/bottom brand bookend down the left edge. The links right-align
+       to the OUTERMOST frame margin (frame-margin from the right), the
+       same line the right corner registration marks sit on — so they
+       square off against the page's corner crop mark rather than floating
+       at the content-column edge. Symmetric frame-margin padding, and the
+       border-top spans the full frame (left:0/right:0). On mobile both
+       sides collapse to the gutter, a simple left/right split. */
+    justify-content: space-between;
+    /* Match the top horizontal margin (.guide-top uses parchment-20) so
+       the page's top and bottom rules read at the same weight. */
+    border-top: 1px solid var(--parchment-20);
+    background: var(--vellum);
+    padding: 24px var(--frame-margin) 28px;
+  }
+
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .footer-resources {
+    position: absolute;
+    top: 24px;
+    left: var(--content-start);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+
+  /* Wordmark deboss — muted parchment ink pressed into dark vellum.
+     At 30px this is the brand signature moment: it appears on the
+     home page in the sidebar (.sidebar-wordmark) as the primary VALAR
+     mark. The same class is reused in the footer on inner pages, but
+     the footer scopes its own smaller size (see .footer .wordmark)
+     so the home moment stays prominent. */
+  .wordmark {
+    position: relative;
+    display: inline-block;
+    width: calc(var(--sidebar-seam) - var(--frame-margin));
+    color: var(--parchment-62);
+    font-family: var(--font-serif);
+    font-size: 30px;
+    font-weight: 400;
+    letter-spacing: 0.11em;
+    line-height: 34px;
+    filter: url("#title-print-distort");
+    text-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.78),
+      0 1px 0 rgba(255, 255, 255, 0.1),
+      1px 1px 1px rgba(0, 0, 0, 0.3),
+      0 0 10px rgba(0, 0, 0, 0.24);
+    text-transform: uppercase;
+  }
+
+  .wordmark::before,
+  .wordmark::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .wordmark::before {
+    z-index: -1;
+    color: rgba(0, 0, 0, 0.54);
+    transform: translate(0.9px, 1px);
+    filter: blur(0.7px);
+  }
+
+  .wordmark::after {
+    color: rgba(255, 255, 255, 0.08);
+    transform: translate(0, 1px);
+    mix-blend-mode: screen;
+  }
+
+  /* Footer wordmark — the base .wordmark carries a fixed 112px width and
+     30px size tuned for the 5-cap "VALAR" in the sidebar column. In the
+     footer's left rail there is no column constraint, and the 7-cap
+     "LATTICE" at 30px would overflow the 112px box by a third. Width
+     auto + 22px keeps the debossed mark ~106px, in proportion with the
+     copyright line below it. */
+  .footer .wordmark {
+    width: auto;
+    font-size: 22px;
+    line-height: 26px;
+  }
+
+  .copy-mark {
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    line-height: 16px;
+    filter: url("#title-print-distort");
+    text-transform: uppercase;
+  }
+
+  .copyright {
+    color: var(--parchment-78);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    line-height: 16px;
+    text-transform: uppercase;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .footer-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    color: var(--lapis);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 20px;
+    filter: url("#title-print-distort");
+    transition: color 180ms ease;
+  }
+
+  .footer-link:hover {
+    color: var(--accent-gold);
+  }
+
+  .footer-resource-link {
+    color: var(--accent-gold);
+  }
+
+  .footer-resource-link:hover {
+    color: var(--ink);
+  }
+
+  .margin-rules {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .registration-marks {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: hidden;
+    color: var(--parchment-62);
+  }
+
+  .mark-anchor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+  }
+
+  .mark-left {
+    left: var(--frame-margin);
+  }
+
+  .mark-right {
+    right: var(--frame-margin);
+  }
+
+  .top-tick {
+    position: fixed;
+    top: -4px;
+    width: 1px;
+    height: 12px;
+    background: var(--parchment);
+  }
+
+  .top-tick-sidebar {
+    left: calc(var(--frame-left) + var(--sidebar-seam));
+  }
+
+  .top-tick-left {
+    left: calc(var(--frame-left) + var(--frame-margin));
+  }
+
+  .top-tick-title {
+    left: calc(var(--frame-left) + var(--content-start));
+  }
+
+  .top-tick-right {
+    left: calc(var(--frame-left) + var(--fourth-line-x));
+  }
+
+  .top-tick-outer-right {
+    right: calc(var(--frame-left) + var(--frame-margin));
+  }
+
+  /* Bottom registration ticks — mirror the top-ticks. Same fixed-to-viewport
+     treatment so they remain visible throughout the scroll, marking the
+     vertical guide lines at both ends of the visible page. Real printer's
+     registration marks come in pairs (top and bottom); this completes the
+     codex-page composition. */
+  .bottom-tick {
+    position: fixed;
+    bottom: -4px;
+    width: 1px;
+    height: 12px;
+    background: var(--parchment);
+  }
+
+  .bottom-tick-sidebar {
+    left: calc(var(--frame-left) + var(--sidebar-seam));
+  }
+
+  .bottom-tick-left {
+    left: calc(var(--frame-left) + var(--frame-margin));
+  }
+
+  .bottom-tick-title {
+    left: calc(var(--frame-left) + var(--content-start));
+  }
+
+  .bottom-tick-right {
+    left: calc(var(--frame-left) + var(--fourth-line-x));
+  }
+
+  .bottom-tick-outer-right {
+    right: calc(var(--frame-left) + var(--frame-margin));
+  }
+
+  .footer-line {
+    position: absolute;
+    top: calc(100% - var(--footer-height));
+    bottom: 0;
+    width: 1px;
+    background: var(--parchment-22);
+  }
+
+  .footer-line-left {
+    left: var(--frame-margin);
+  }
+
+  .footer-line-sidebar {
+    left: var(--sidebar-seam);
+  }
+
+  .footer-line-title-stem {
+    left: var(--content-start);
+  }
+
+  .footer-line-stem {
+    left: var(--fourth-line-x);
+  }
+
+  .footer-line-right {
+    right: var(--frame-margin);
+  }
+
+  /* Content column edges fade UP in the footer area — mirror of the
+     top stubs (which fade DOWN). Together they bracket the content
+     column at top and bottom, with open vellum between. The other
+     footer lines (left frame, sidebar seam, right frame) stay solid
+     because they continue the structural framing of the page. */
+  .footer-line-title-stem,
+  .footer-line-stem {
+    background: linear-gradient(
+      180deg,
+      var(--parchment-00) 0%,
+      var(--parchment-08) 52%,
+      var(--parchment-20) 100%
+    );
+  }
+
+  .guide {
+    position: absolute;
+    background: var(--parchment-20);
+  }
+
+  .guide-left-inner,
+  .guide-sidebar-seam,
+  .guide-right-inner,
+  .guide-right-stem {
+    background:
+      radial-gradient(
+        circle at 50% var(--line-focus-y),
+        rgba(var(--parchment-rgb), 0.32) 0,
+        var(--parchment-20) 58px,
+        var(--parchment-05) 148px
+      ),
+      linear-gradient(
+        180deg,
+        var(--parchment-16) 0%,
+        var(--parchment-16) 48%,
+        var(--parchment-11) 76%,
+        rgba(var(--parchment-rgb), 0.15) 100%
+      );
+    transform: translateY(var(--line-scroll-offset));
+    transition: transform 80ms linear;
+  }
+
+  .guide-left-inner::after,
+  .guide-sidebar-seam::after,
+  .guide-right-inner::after,
+  .guide-title-stem::after,
+  .guide-right-stem::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      var(--parchment-00) 0%,
+      rgba(var(--parchment-rgb), 0.24) 46%,
+      var(--parchment-02) 100%
+    );
+    opacity: 0;
+    transform: translateY(calc(-100% + var(--line-scroll-offset)));
+    animation: lineBreath 9s ease-in-out infinite;
+  }
+
+  .guide-left-inner::before,
+  .guide-right-inner::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: var(--footer-height);
+    background: var(--parchment-22);
+  }
+
+  /* On home (no footer rendered), the bottom footer-height region is
+     empty vellum — the solid parchment-22 stub above is meant to anchor
+     the outer guides through the footer area, but with no footer it
+     reads as a "stronger gold" band stuck to the bottom of the first
+     and fifth verticals. Suppress it so the home outer guides fade to
+     transparent like all the other verticals on the page. */
+  .page-frame-home .guide-left-inner::before,
+  .page-frame-home .guide-right-inner::before {
+    display: none;
+  }
+
+  /* Home: the outer verticals stop at the bottom horizontal rule (64px,
+     where the plate ends) instead of running through the VALAR band to
+     the viewport edge. The stray below-the-rule segments read as loose
+     frame ends on a page that otherwise closes cleanly at that rule. */
+  .page-frame-home .guide-left-inner,
+  .page-frame-home .guide-right-inner {
+    bottom: 64px;
+  }
+
+  .guide-sidebar-seam,
+  .guide-right-stem {
+    background:
+      radial-gradient(
+        circle at 50% var(--line-focus-y),
+        rgba(var(--parchment-rgb), 0.32) 0,
+        var(--parchment-20) 58px,
+        var(--parchment-05) 148px
+      ),
+      linear-gradient(
+        180deg,
+        var(--parchment-16) 0%,
+        var(--parchment-16) 48%,
+        var(--parchment-08) 78%,
+        var(--parchment-00) 100%
+      );
+  }
+
+  .guide-sidebar-seam::after {
+    animation-delay: 1.1s;
+  }
+
+  .guide-right-inner::after,
+  .guide-right-stem::after {
+    animation-delay: 2.2s;
+  }
+
+  /* Both content-column stems share the same quiet fade — simple linear
+     gradient that dims to transparent at the bottom of the 148px stub.
+     Override the radial mouse-focus + bottom-gradient from the shared
+     guide block above; these registration marks don't need to respond
+     to cursor movement. */
+  .guide-title-stem,
+  .guide-right-stem {
+    overflow: hidden;
+    background: linear-gradient(
+      180deg,
+      var(--parchment-20) 0%,
+      var(--parchment-08) 52%,
+      var(--parchment-00) 100%
+    );
+  }
+
+  .guide-left-inner {
+    top: 0;
+    bottom: 0;
+    left: var(--frame-margin);
+    width: 1px;
+  }
+
+  .guide-sidebar-seam {
+    top: 0;
+    bottom: var(--footer-height);
+    left: var(--sidebar-seam);
+    width: 1px;
+  }
+
+  .guide-right-inner {
+    top: 0;
+    right: var(--frame-margin);
+    bottom: 0;
+    width: 1px;
+  }
+
+  .guide-title-stem {
+    top: 0;
+    left: var(--content-start);
+    width: 1px;
+    height: 148px;
+  }
+
+  .guide-right-stem {
+    top: 0;
+    left: var(--fourth-line-x);
+    width: 1px;
+    height: 148px;
+    overflow: hidden;
+  }
+
+  .guide-top {
+    top: 64px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    transform-origin: 0 0;
+    /* Unified to parchment-22 to match all other hairlines on the site
+       (card borders, section dividers, footer rules). Previously
+       parchment-20 — visually slightly lighter than the rest of the
+       hairline system, creating an inconsistency between the horizontal
+       margin guides and everything else. */
+    background: var(--parchment-22);
+  }
+
+  .guide-bottom {
+    display: none;
+    bottom: 64px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    transform-origin: 0 0;
+    background: var(--parchment-22);
+  }
+
+  .page-frame-home .guide-bottom {
+    display: block;
+  }
+
+  /* Extend home's two horizontal margin rules to the full viewport width
+     on screens wider than the 1440 frame — the home analog of the
+     inner-page .frame-bleed-rules. The backdrop is position:fixed and
+     already escapes the frame's overflow:clip (that's how it fills the
+     viewport); doing the same to these guides lets them run edge-to-edge
+     over the photo instead of stopping at the 1440 cap. Safe because home
+     is single-viewport (no scroll), so pinning to the viewport keeps their
+     positions (top:64 / bottom:64) unchanged. They stay above the backdrop
+     via .page-frame-home .margin-rules { z-index: 2 }. left+right:0 spans
+     the viewport without a 100vw scrollbar gutter. The vertical guides and
+     corner marks stay at the centered 1440 frame, same as inner pages. */
+  .page-frame-home .guide-top,
+  .page-frame-home .guide-bottom {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: auto;
+  }
+
+  /* On home (no footer), terminate the 1st and 5th vertical guides at
+     the bottom horizontal guide (bottom: 64px) so they form a closed
+     bracket with guide-bottom rather than extending into the empty
+     footer-height area below. Both verticals now stop at the same
+     position, unifying their bottom terminations. */
+  .page-frame-home .guide-left-inner,
+  .page-frame-home .guide-right-inner {
+    bottom: 64px;
+  }
+
+  /* Home has no footer, but the lower VALAR band still needs its vertical
+     registration lines. Start them at the bottom horizontal rule instead
+     of the normal footer height so they don't overlap the outer guides
+     above the rule and read thicker/golder. */
+  .page-frame-home .footer-line {
+    top: calc(100% - 64px);
+  }
+
+  /* Also sync the breath animation phase on home — the staggered 2.2s
+     delay on guide-right-inner was creating perceptible left/right
+     asymmetry (one vertical breathing brighter than the other at any
+     given moment). Removing the delay on home unifies the visual
+     rhythm: both outer verticals breathe in lockstep, reading as a
+     paired bracket rather than independent rules. */
+  .page-frame-home .guide-right-inner::after {
+    animation-delay: 0s;
+  }
+
+  .page-frame-home .corner-bottom-left,
+  .page-frame-home .corner-bottom-right {
+    opacity: 0.33;
+  }
+
+  /* Ribbon bookmark — a short lapis segment on the spine guide that
+     tracks scroll progress. Fixed in the viewport at the same x as
+     .guide-left-inner so it visually rides on that rule. Travels
+     between top:64px (just under the top horizontal guide) and the
+     bottom of the printable area. Hidden when the document isn't
+     scrollable (set via --bookmark-opacity by the App.jsx scroll loop).
+
+     Codex analog: a colored ribbon hanging from the spine at the
+     current page. Not a scrollbar thumb — the segment is fixed-height
+     (96px) rather than scaled to viewport/document ratio, so it reads
+     as a marker rather than a thumb. */
+  .scroll-bookmark {
+    position: fixed;
+    top: calc(64px + (100vh - 128px - 56px) * var(--bookmark-progress, 0));
+    /* Align to the page-frame's actual left edge, not the viewport edge.
+       The page-frame is centered (max-width 1440px, margin auto) so on
+       wide viewports its left edge sits at --frame-left, not at 0. Add
+       --frame-margin to land exactly on .guide-left-inner (the spine
+       guide, the first vertical rule). */
+    left: calc(var(--frame-left, 0px) + var(--frame-margin));
+    width: 1px;
+    height: 56px;
+    /* The unified lapis — same readable shade as the Research dates and
+       footer links, so this scroll-position marker reads at the page's
+       lapis weight rather than as dimmed punctuation. */
+    background: var(--lapis);
+    opacity: var(--bookmark-opacity, 0);
+    transition: opacity 320ms ease;
+    pointer-events: none;
+    z-index: 4;
+    /* Inherit the spine guide's scroll-drift wobble so the ribbon stays
+       visually attached to .guide-left-inner instead of separating from
+       it during scroll. Same var, same settle loop. */
+    transform: translateY(var(--line-scroll-offset, 0));
+  }
+
+  /* Home is a single-viewport frontispiece — no scroll, no need for a
+     position indicator. Explicit hide so the ribbon never flickers
+     in/out at edge-case viewport heights where scroll briefly exceeds
+     the bookmark's auto-hide threshold. */
+  .page-frame-home .scroll-bookmark {
+    display: none;
+  }
+
+  /* Hide the ribbon once the footer enters the viewport — otherwise the
+     bookmark (fixed near the bottom of the printable area) would overlap
+     the footer band. footer-in-view is toggled by the IntersectionObserver
+     in App.jsx; the existing 320ms opacity transition fades it out as the
+     footer arrives. Higher specificity than the inline --bookmark-opacity
+     declaration, so it wins. */
+  body.footer-in-view .scroll-bookmark {
+    opacity: 0;
+  }
+
+  /* About's last roster rows are still active reading content while the
+     footer first peeks into view. Keep the lapis scroll marker visible
+     there so Roman/Adam retain the same scroll affordance as earlier rows. */
+  body.footer-in-view .page-frame-about .scroll-bookmark {
+    opacity: var(--bookmark-opacity, 0);
+  }
+
+  .corner-mark {
+    position: absolute;
+    display: block;
+    width: 16px;
+    height: 16px;
+    opacity: 0.62;
+  }
+
+  /* Corner marks bracket the outer vertical guides. Top marks sit on the
+     top horizontal guide; bottom marks sit on the footer border where the
+     footer rule meets the first and fifth margin lines. */
+  .corner-top-left {
+    top: 56px;
+    left: -8px;
+  }
+
+  .corner-bottom-left {
+    top: calc(100% - var(--footer-height) - 8px);
+    left: -8px;
+  }
+
+  .corner-top-right {
+    top: 56px;
+    right: -8px;
+  }
+
+  .corner-bottom-right {
+    top: calc(100% - var(--footer-height) - 8px);
+    right: -8px;
+  }
+
+  .page-frame-home .corner-bottom-left,
+  .page-frame-home .corner-bottom-right {
+    top: auto;
+    bottom: 56px;
+  }
+
+  @keyframes lineBreath {
+    0%,
+    100% {
+      opacity: 0;
+      transform: translateY(calc(-90% + var(--line-scroll-offset)));
+    }
+
+    45% {
+      opacity: 0.34;
+    }
+
+    62% {
+      opacity: 0.08;
+      transform: translateY(calc(85% + var(--line-scroll-offset)));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .guide-left-inner,
+    .guide-sidebar-seam,
+    .guide-right-inner,
+    .guide-right-stem {
+      animation: none;
+      transform: none;
+      transition: none;
+    }
+
+    .guide-left-inner::after,
+    .guide-sidebar-seam::after,
+    .guide-right-inner::after,
+    .guide-title-stem::after,
+    .guide-right-stem::after {
+      animation: none;
+    }
+
+    .mobile-menu,
+    .mobile-menu-header,
+    .mobile-nav-item,
+    .mobile-menu-social-link {
+      transition: opacity 120ms linear;
+      transform: none;
+    }
+
+    .mobile-menu-open,
+    .mobile-menu-open .mobile-menu-header,
+    .mobile-menu-open .mobile-nav-item,
+    .mobile-menu-open .mobile-menu-social-link {
+      transition: opacity 120ms linear;
+      transition-delay: 0ms;
+      transform: none;
+    }
+
+  }
+}
+
+@media (max-width: 1100px) {
+  .work-roadmap-row {
+    grid-template-columns: 120px repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    padding: 32px 0;
+  }
+
+  .work-roadmap-header {
+    padding-top: 24px;
+    padding-bottom: 36px;
+  }
+
+  .work-roadmap-header .work-roadmap-cell h2 {
+    font-size: 24px;
+    line-height: 28px;
+  }
+
+  .work-roadmap-cell h2 {
+    font-size: clamp(18px, 1.8vw, 22px);
+  }
+
+  .team-member-card {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .team-member-card:first-child {
+    padding-left: 0;
+  }
+
+  .article-row {
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 0;
+  }
+
+  .article-date {
+    flex-basis: auto;
+    width: auto;
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-frame {
+    --mobile-gutter: clamp(24px, 8vw, 40px);
+    --frame-margin: var(--mobile-gutter);
+    --footer-height: 225px;
+    --page-edge-space: 64px;
+    --gap-title-to-intro: 28px;
+    --gap-after-intro: 48px;
+    --content-width: 100%;
+    --content-start: var(--mobile-gutter);
+    --content-end-pad: var(--mobile-gutter);
+    --column-inset: 0px;
+    --line-scroll-offset: 0px;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  /* Hide both manuscript-grid layers on mobile. The margin rules
+     (vertical guides) and the registration marks (corner brackets,
+     top/bottom ticks, footer-line verticals) are all anchored to
+     desktop x-positions that don't map to a mobile gutter. The
+     scroll bookmark (right edge, 1px lapis) remains as the only
+     residual brand-specific UI on scrollable pages. */
+  .margin-rules,
+  .registration-marks {
+    display: none;
+  }
+
+  .frame-bleed-rules::before {
+    display: none;
+  }
+
+  /* Scroll bookmark — move to the right edge on mobile so it sits
+     opposite the chrome (V logo + Menu at top-left) and out of the
+     natural left-thumb scroll zone. Width stays 1px. Inheriting
+     --line-scroll-offset translateY would jitter against a guide
+     that's no longer rendered, so reset transform. */
+  .scroll-bookmark {
+    left: auto;
+    right: var(--mobile-gutter);
+    transform: none;
+  }
+
+  /* Halve reveal-animation durations on mobile — desktop's deliberate
+     1000/700ms cascade reads as "wait state" on a phone where the
+     user has actively scrolled toward the content and wants it now.
+     Stagger value is set inline by JS; see WorkContent's matchMedia
+     gate for the per-row delay override (140ms → 80ms on mobile). */
+  .work-roadmap-row {
+    transition:
+      opacity 500ms ease-out,
+      transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .capacity-comparison-eyebrow,
+  .work-roadmap-eyebrow,
+  .work-current-eyebrow {
+    transition:
+      opacity 350ms ease-out,
+      transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .sidebar-rail {
+    position: relative;
+    inset: auto;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    min-width: 0;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 64px var(--mobile-gutter) 0;
+  }
+
+  .logo-mark {
+    transform: none;
+  }
+
+  .primary-nav {
+    display: none;
+    margin-top: 0;
+  }
+
+  .menu-toggle {
+    display: block;
+    align-self: flex-start;
+    margin-left: auto;
+    transform: none;
+  }
+
+  /* Mobile: the visible theme toggle lives inside the mobile-menu
+     overlay (opens via the top-right Menu button). Hide the in-row
+     instance that would otherwise sit awkwardly between the logo and
+     the menu button in the flex-row sidebar-rail. */
+  .sidebar-rail .theme-toggle {
+    display: none;
+  }
+
+  /* Mobile: anchor the VALAR watermark to the bottom-left of the
+     viewport, completing the folio's brand bracket (V logo top-left,
+     VALAR bottom-left) the same way the desktop sidebar does — just
+     stacked instead of railed. position: fixed takes it out of the
+     header's flow and pins it to the viewport, so it overlays the lower
+     backdrop as a decorative mark without consuming vertical space or
+     disturbing the centered hero+card (the page stays single-screen).
+       - left: --mobile-gutter shares the V logo's left axis
+       - bottom: 64px to mirror the V logo's 64px top inset (the header's
+         padding-top), so the bracket is symmetric — equal breathing room
+         above the logo and below the wordmark. max() with the safe-area
+         inset keeps it clear of the home indicator on notched devices.
+       - transform/margin/width reset the desktop sidebar-column rules
+       - z-index 1: above the fixed backdrop (0), below the mobile menu
+         overlay (20) so it's hidden when the menu opens
+       - pointer-events: none — purely decorative, never intercepts taps */
+  .sidebar-wordmark {
+    display: inline-block;
+    position: fixed;
+    left: var(--mobile-gutter);
+    bottom: max(64px, env(safe-area-inset-bottom, 0px));
+    z-index: 1;
+    width: auto;
+    margin-top: 0;
+    transform: none;
+    pointer-events: none;
+  }
+
+  /* Push the menu-toggle to the end of the row so the wordmark (order
+     1) renders between the V logo (order 0) and the menu button.
+     Without this, the wordmark would land AFTER the menu-toggle in
+     DOM order, putting it visually past the menu button. */
+  .menu-toggle {
+    order: 2;
+  }
+
+  /* Mobile vertical guides — on non-home pages, the left/right inner
+     rules now start at the V logo's vertical position (top: 64px,
+     matching the sidebar-rail's padding-top) instead of bursting up
+     from the page top, and fade out well above the footer edge. Reads
+     as a manuscript text-block boundary rather than a full-height
+     chrome line — the rules belong to the reading area, not the
+     entire viewport. Home is excluded because it's single-viewport
+     with its own composition rules. */
+  .page-frame:not(.page-frame-home) .guide-left-inner,
+  .page-frame:not(.page-frame-home) .guide-right-inner {
+    top: 64px;
+    bottom: var(--footer-height);
+    background: linear-gradient(
+      180deg,
+      var(--parchment-22) 0%,
+      var(--parchment-16) 12%,
+      var(--parchment-11) 40%,
+      var(--parchment-05) 72%,
+      var(--parchment-00) 100%
+    );
+  }
+
+  .mobile-menu {
+    display: flex;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  /* Match sidebar-rail's padding-top exactly so the Close button lands
+     at the same x/y position as the Menu button it replaces. Wordmark
+     sits on the left, Close on the right — justify-content from the
+     base layer (space-between) handles the split. */
+  .mobile-menu-header {
+    padding: 64px var(--mobile-gutter) 0;
+  }
+
+  .menu-wordmark {
+    font-size: clamp(28px, 9vw, 42px);
+    line-height: 1.08;
+  }
+
+  .mobile-nav-link {
+    font-size: clamp(28px, 9vw, 42px);
+    line-height: 1.08;
+  }
+
+  .mobile-menu-body {
+    justify-content: flex-start;
+    gap: clamp(32px, 6vh, 56px);
+    padding: clamp(48px, 8vh, 88px) var(--mobile-gutter) max(32px, calc(env(safe-area-inset-bottom) + 20px));
+  }
+
+  .mobile-menu-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition:
+      opacity 220ms ease-out,
+      transform 220ms ease-out;
+  }
+
+  /* Open state: each item reads its own --item-delay
+     from inline style set in JSX (see MENU_TIMING in Navigation.jsx). */
+  .mobile-menu-open .mobile-menu-header,
+  .mobile-menu-open .mobile-nav-item,
+  .mobile-menu-open .mobile-menu-social-link {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 200ms ease-out,
+      transform 200ms ease-out;
+    transition-delay: var(--item-delay, 0ms);
+  }
+
+  .page-content {
+    min-height: 0;
+    padding-right: var(--mobile-gutter);
+    padding-left: var(--mobile-gutter);
+  }
+
+  .intro-section {
+    padding-top: var(--page-edge-space);
+    padding-bottom: 48px;
+    min-width: 0;
+  }
+
+  .content-lane {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-left: 0;
+  }
+
+  .intro-copy {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .intro-section-work .intro-copy,
+  .capacity-comparison-description,
+  .capacity-card-caption {
+    overflow-wrap: anywhere;
+  }
+
+  .article-section {
+    padding-bottom: 0;
+  }
+
+  .page-body {
+    padding-bottom: 0;
+  }
+
+  .home-section {
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+
+  .page-frame-home .page-content {
+    margin-top: -112px;
+  }
+
+  .page-frame-home .home-section {
+    padding-top: 64px;
+  }
+
+  .home-hero {
+    gap: 36px;
+    padding: 0 0 24px;
+  }
+
+  .page-frame-home .home-hero {
+    margin-top: 0;
+  }
+
+  .home-hero-positioning {
+    /* Mobile scale raised (was clamp(24px, 6.5vw, 50px) ≈ 25px at
+       390px) — at 25px regular serif the headline lost the hierarchy
+      fight against the 30px semibold gold headword below it: the
+      dictionary entry read as the page's lead. 8.5vw ≈ 33px at 390px,
+      and the headword's mobile rule below caps at ~25px, restoring
+      the headline's primacy on every screen. Releases nowrap so the
+      headline can wrap on small screens; text-wrap: balance produces
+      an even break instead of a lonely orphan. */
+    font-size: clamp(32px, 8.5vw, 50px);
+    line-height: 1.08;
+    white-space: normal;
+    text-wrap: balance;
+  }
+
+  /* Headword steps DOWN on mobile (its desktop floor was 30px —
+     larger than the 25px mobile headline it sat under). ~25px at
+     390px keeps it the band's lead while staying clearly subordinate
+     to the headline above. */
+  .home-hero-cards .home-margin-card-title {
+    font-size: clamp(24px, 6.5vw, 28px);
+  }
+
+  .home-hero-colophon {
+    font-size: 17px;
+    line-height: 1.45;
+  }
+
+  .home-hero-illumination img {
+    max-height: 200px;
+  }
+
+  .home-margin-rail {
+    padding: 0;
+  }
+
+  /* Mobile home — stack the poster in flow instead of overlapping.
+     On desktop the freedom-money card is absolutely positioned to the
+     bottom-right corner (a poster composition over the backdrop). On a
+     phone that pinning leaves the card floating out of flow at a locked
+     credit-card ratio, so here we drop it into normal flow directly
+     below the hero text:
+       - position: static returns the card to the document flow
+       - full width (max-width:none) so it spans the reading column
+       - margin-top sets the gap from the hero sentence above it
+     The lane centers the hero+card pair vertically so the frontispiece
+     keeps its balanced top/bottom whitespace rather than clustering at
+     the top with empty space below (page-content uses min-height, so if
+     the pair ever exceeds the viewport it simply grows and scrolls). */
+  .home-lane {
+    justify-content: center;
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  /* Full-width card spans logo-start → menu-end: the sidebar-rail header
+     pads by --mobile-gutter on both sides (V logo at gutter-left, menu
+     button at gutter-right), and .page-content pads by --mobile-gutter
+     too, so a width:100% card in the lane lands on exactly those edges. */
+  .home-hero-cards {
+    position: static;
+    /* Mobile renders the entry as a CARD — framed, floating over the
+       full-bleed engraving like a tipped-in plate.
+       Width: exactly the lane (= the header's span: the V logo's left
+       edge to MENU's right edge both sit at --mobile-gutter), capped
+       at 520px for small tablets in this block (iPad Mini portrait,
+       744px — uncapped, the card stretched ~660px and read as a
+       banner). The card must never read wider than the chrome above
+       it. The lane is symmetric on phones, so auto margins center
+       correctly. The measure lost to the gutters (vs the earlier
+       16px-edge experiment) is bought back by the 14px sense size
+       below — the anti-wrap budget lives there now. */
+    width: 100%;
+    max-width: 100%;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    box-sizing: border-box;
+    margin: 40px auto 0;
+  }
+
+  /* Size to content — no locked ratio, no min-height. The desktop's
+     1.586 ratio (and an earlier portrait ratio / 50dvh min-height) both
+     forced the card far taller than its content, leaving a third of it
+     empty above the headword. With only a headword + 4 short definitions
+     there's nothing to gain from extra height: the card hugs its content
+     and the 48px symmetric top/bottom padding (on the body) supplies the
+     breathing room, so the entry reads as balanced/centered without the
+     dead space. Lands naturally portrait because the definitions wrap. */
+  .home-hero-cards .home-margin-card {
+    aspect-ratio: auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    /* The double-rule card frame comes from the ≤1180 block (phones
+       are inside that range); this block only keeps the card flush
+       (body owns interior padding). */
+    padding: 0;
+  }
+
+  /* Card interior padding — phone tightens the ≤1180 rule's vertical
+     rhythm and trims horizontal padding to 12px: the body is
+     fit-content + auto-centered (inherited from the ≤1180 rule), so
+     the visible left/right gaps come from centering the text group,
+     not from padding. 12px is just the safety margin against the 8px
+     inset rule when a sense wraps at tiny widths. */
+  .home-hero-cards .home-margin-card-body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 26px 16px 30px 24px;
+  }
+
+  /* Senses at 14px on phones — with the card now constrained to the
+     header's span (gutter-aligned), 14px is the size at which the
+     longest sense ("encrypted; your information is your business")
+     holds a single line at 390px. (Tiny devices ≤360px will still
+     wrap it; acceptable floor.) */
+  .home-hero-cards .home-margin-card-points li {
+    font-size: 14px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .home-hero-cards .home-margin-card-title-row,
+  .home-hero-cards .home-margin-card-points {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .home-hero-cards .home-margin-card-point-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Drop the headword's OED-column indent on mobile. On desktop the
+     30px padding-left aligns the headword with the definition TEXT,
+     which sits past the hanging numeral column. On mobile the numerals
+     are hidden and the definitions sit flush at the body padding, so
+     that indent just pushed the headword right of them — zero it so
+     "freedom money" shares the definitions' left edge. */
+  .home-hero-cards .home-margin-card-title-row {
+    padding-left: 0;
+  }
+
+  .work-roadmap {
+    border-top-color: var(--parchment-22);
+  }
+
+  .work-roadmap-row,
+  .work-roadmap-header {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 34px 0 38px;
+  }
+
+  .work-roadmap-header {
+    /* On mobile, hide the header row — its stage info gets rendered inline
+       above each value cell via the data-stage attribute. */
+    display: none;
+  }
+
+  .work-roadmap-label,
+  .work-roadmap-numeral {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .work-roadmap-numeral {
+    margin-bottom: 10px;
+  }
+
+  .work-roadmap-cell {
+    border-top: 1px solid var(--parchment-16);
+    padding-top: 18px;
+  }
+
+  /* Render the stage label inline above each value on mobile, since the
+     header row (which carried stages on desktop) is hidden here. */
+  .work-roadmap-cell::before {
+    content: attr(data-stage);
+    display: block;
+    margin-bottom: 8px;
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  .work-roadmap-cell h2 {
+    font-size: clamp(22px, 6vw, 30px);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .work-roadmap-cell p {
+    margin-top: 12px;
+    font-size: 13.5px;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  /* Capacity comparison mobile — stack to single column, give dots a
+     smaller cap so the meter fits comfortably at narrow widths. */
+  .capacity-comparison {
+    padding-top: 36px;
+    margin-top: 16px;
+  }
+
+  /* Mobile lacks a left gutter — pull both section eyebrows inline. */
+  .capacity-comparison-eyebrow,
+  .work-roadmap-eyebrow {
+    position: static;
+    margin: 0 0 16px;
+  }
+
+  .work-current {
+    margin-top: 56px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .work-current-eyebrow {
+    position: static;
+    margin: 0 0 18px;
+  }
+
+  .work-current-list {
+    gap: 22px;
+  }
+
+  /* Gutter collapses on mobile — drop the right-margin gloss and let the
+     footnote block below carry the same annotations (incl. the PIR link). */
+  .annotation-marginalia {
+    display: none;
+  }
+
+  .work-current-footnotes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--lapis);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 15px;
+  }
+
+  .work-current-footnotes a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .work-current-footnotes a:hover,
+  .work-current-footnotes a:focus-visible {
+    color: var(--accent-gold);
+    outline: none;
+  }
+
+  .work-current-footnote-mark {
+    margin-right: 4px;
+  }
+
+  /* Term gets stronger weight than the gloss so the reader sees the
+     anchor word ("PIR-based") and immediately recalls where the
+     asterisk fired in the body, without having to scroll back. */
+  .work-current-footnote-term {
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .capacity-comparison-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    min-width: 0;
+  }
+
+  .capacity-comparison,
+  .capacity-comparison-grid,
+  .capacity-card,
+  .capacity-meter {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .capacity-card {
+    min-width: 0;
+    padding: 28px 24px;
+    overflow: hidden;
+  }
+
+  /* Mobile dot meter: collapse 30 cols × 2 rows → 20 cols × 3 rows so
+     each dot has room to read as a discrete unit, not as a textured
+     bar. Same 60-position scale, just rebalanced. */
+  .capacity-meter {
+    grid-template-columns: repeat(15, minmax(0, 1fr));
+    max-width: 100%;
+    gap: 5px 3px;
+  }
+
+  .capacity-dot {
+    max-width: 8px;
+  }
+
+  .team-section {
+    padding-bottom: 0;
+  }
+
+  /* Hide the right-gutter illumination on mobile — the gutter collapses
+     to ~0 width and the image has nowhere to live. */
+  .team-illumination {
+    display: none;
+  }
+
+  /* Mobile roster — collapse the two-column directory to a single
+     stack: name on top, bio + links below. */
+  .team-roster-row {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    padding: 28px 0 32px;
+  }
+
+  .team-roster-meta {
+    padding-top: 0;
+    margin-bottom: 12px;
+  }
+
+  .team-roster-name {
+    font-size: clamp(21px, 6vw, 23px);
+    line-height: 1.32;
+  }
+
+  /* Body register bumped from desktop 14px → 16px so the credibility
+     copy reads at iOS body-text scale, not metadata scale. */
+  .team-roster-bio {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .team-roster-links {
+    align-items: center;
+    gap: 4px;
+    margin-top: 16px;
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  /* iOS HIG 44pt minimum tap target. Inline-flex with center
+     alignment and explicit min dimensions ensures even single-char
+     links ("X") meet the spec without breaking the inline rhythm. */
+  .team-roster-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 8px;
+  }
+
+  .footer {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    flex-direction: column;
+    gap: 28px;
+    padding: 48px var(--mobile-gutter) 56px;
+  }
+
+  .footer-resources {
+    position: static;
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    align-items: flex-start;
+  }
+
+  .footer-line,
+  .guide-left-inner,
+  .guide-sidebar-seam,
+  .guide-right-inner,
+  .guide-title-stem,
+  .guide-right-stem,
+  .top-tick,
+  .bottom-tick {
+    display: none;
+  }
+
+  .top-tick-left,
+  .top-tick-outer-right,
+  .bottom-tick-left,
+  .bottom-tick-outer-right {
+    display: block;
+  }
+
+  h1 {
+    font-size: clamp(32px, 9vw, 36px);
+    line-height: 1.1;
+  }
+
+  .article-row {
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px 0;
+  }
+
+  .article-row::before {
+    background: var(--parchment-22);
+  }
+
+  .article-date {
+    flex-basis: auto;
+    width: auto;
+  }
+
+  .article-row h2 {
+    font-size: clamp(21px, 6vw, 23px);
+    line-height: 1.32;
+    overflow-wrap: anywhere;
+  }
+
+  .article-row p {
+    font-size: 15px;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+  }
+
+  /* Mobile: collapse the desktop 2×2 sense grid back to a single
+     stacked column — one sense per line, reading straight down.
+     Row gap 16px (was 10): senses wrap to two lines at phone widths,
+     and a gap close to the wrapped line-height made the four senses
+     blur into one paragraph. Each sense is a unit; the spacing has
+     to say so. */
+  .home-hero-cards .home-margin-card-points {
+    grid-template-rows: none;
+    grid-template-columns: 1fr;
+    grid-auto-flow: row;
+    row-gap: 16px;
+  }
+
+  .home-hero-cards .home-margin-card-points li {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .home-hero-cards .home-margin-card-point-num {
+    display: none;
+  }
+
+  .home-hero-cards .home-margin-card-points li:last-child .home-margin-card-point-text {
+    color: var(--accent-gold);
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 36px;
+    height: auto;
+    min-height: 0;
+  }
+
+  .footer-links {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .copyright {
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+  }
+}
+
+@media (max-width: 380px) {
+  .page-frame {
+    --page-edge-space: 52px;
+    --gap-title-to-intro: 24px;
+    --gap-after-intro: 40px;
+  }
+
+  .sidebar-rail {
+    padding-top: 64px;
+  }
+
+  .mobile-menu-header {
+    padding-top: 64px;
+  }
+
+  .logo-mark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .intro-section {
+    padding-top: var(--page-edge-space);
+    padding-bottom: 40px;
+  }
+
+  .mobile-nav {
+    gap: 16px;
+  }
+
+  .mobile-menu-body {
+    padding-top: 40px;
+  }
+
+  .menu-wordmark,
+  .mobile-nav-link {
+    font-size: clamp(28px, 9vw, 42px);
+    line-height: 1.08;
+  }
+}
