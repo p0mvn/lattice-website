@@ -3113,6 +3113,127 @@
     outline-offset: 4px;
   }
 
+  /* ─────────────────────────────────────────────────────────────────
+     Projects — evidence ledger
+     Reuses the roster row grid (name+dates left, content right). The
+     right column stacks: context paragraph → role blocks, each with a
+     title/dates head, optional role context, and claim-led bullets.
+     ───────────────────────────────────────────────────────────────── */
+
+  /* Context paragraphs (project-level and role-level) sit one register
+     below the bio text — parchment-78 orientation copy, not ink. */
+  .project-context {
+    margin: 0 0 28px;
+    max-width: 640px;
+    color: var(--parchment-78);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .project-role {
+    margin-top: 32px;
+  }
+
+  /* The first role follows a context paragraph directly (which already
+     has bottom margin), so collapse the extra gap. */
+  .project-context + .project-role {
+    margin-top: 0;
+  }
+
+  .project-role-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+  }
+
+  .project-role-title {
+    margin: 0;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+  }
+
+  /* Role dates share the metadata register (mono caps, parchment-62)
+     with the roster titles and About contact label. */
+  .project-role-dates {
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  .project-lead {
+    margin: 12px 0 0;
+    max-width: 640px;
+    color: var(--parchment-78);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* Claim-led bullets: hairline dash marker (the site's rule register),
+     bold white lead phrase carrying the claim, regular ink body with
+     the evidence. Same 14/22 text rhythm as the roster bios. */
+  .project-bullets {
+    margin: 16px 0 0;
+    padding: 0;
+    max-width: 640px;
+    list-style: none;
+  }
+
+  .project-bullets li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .project-bullets li + li {
+    margin-top: 10px;
+  }
+
+  .project-bullets li::before {
+    content: "";
+    position: absolute;
+    top: 0.72em;
+    left: 0;
+    width: 8px;
+    height: 1px;
+    background: var(--parchment-42);
+  }
+
+  .project-bullet-lead {
+    font-weight: 500;
+  }
+
+  /* Inline citation links — the site's external-link register (lapis)
+     with a parchment-33 underline so linked evidence reads at a glance
+     inside body text. Hover goes full white (the activation register). */
+  .project-link {
+    color: var(--lapis);
+    text-decoration: underline;
+    text-decoration-color: var(--parchment-33);
+    text-underline-offset: 3px;
+    transition:
+      color 180ms ease,
+      text-decoration-color 180ms ease;
+  }
+
+  .project-link:hover {
+    color: var(--accent-gold);
+    text-decoration-color: var(--accent-gold);
+  }
+
+  .project-link:focus-visible {
+    outline: 1px solid var(--accent-gold);
+    outline-offset: 4px;
+  }
+
   .article-lane {
     position: relative;
   }

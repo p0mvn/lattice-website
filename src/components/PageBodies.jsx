@@ -175,7 +175,126 @@ export function AboutContent({ page }) {
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// ProjectsContent — selected-work ledger
+//
+// Same editorial row template as the About roster: project name + dates
+// as the left sidebar label, evidence on the right — context paragraph,
+// then one block per role (title + dates + bullets). Bullets carry a
+// bold lead phrase (the claim) followed by the substantiating body.
+// ─────────────────────────────────────────────────────────────────────
+
+// Renders text with inline citation links. Each bullet optionally
+// carries `links: [{ text, href }]`; the first occurrence of each
+// link's text is wrapped in an external <a>. Plain text otherwise.
+function LinkedText({ text, links = [] }) {
+  let segments = [{ str: text }];
+  links.forEach((link) => {
+    segments = segments.flatMap((seg) => {
+      if (seg.href) return [seg];
+      const idx = seg.str.indexOf(link.text);
+      if (idx === -1) return [seg];
+      return [
+        { str: seg.str.slice(0, idx) },
+        { str: link.text, href: link.href },
+        { str: seg.str.slice(idx + link.text.length) },
+      ];
+    });
+  });
+  return segments.map((seg, i) =>
+    seg.href ? (
+      <a
+        key={i}
+        className="project-link"
+        href={seg.href}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {seg.str}
+      </a>
+    ) : (
+      <span key={i}>{seg.str}</span>
+    ),
+  );
+}
+
+function ProjectRole({ role }) {
+  return (
+    <section className="project-role">
+      {role.title || role.dates ? (
+        <div className="project-role-head">
+          {role.title ? <h3 className="project-role-title">{role.title}</h3> : null}
+          {role.dates ? (
+            <span className="project-role-dates">{role.dates}</span>
+          ) : null}
+        </div>
+      ) : null}
+      {role.context ? <p className="project-context">{role.context}</p> : null}
+      {role.lead ? <p className="project-lead">{role.lead}</p> : null}
+      <ul className="project-bullets">
+        {role.bullets.map((bullet) => (
+          <li key={bullet.lead}>
+            {bullet.leadHref ? (
+              <a
+                className="project-bullet-lead project-link"
+                href={bullet.leadHref}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {bullet.lead}
+              </a>
+            ) : (
+              <span className="project-bullet-lead">{bullet.lead}</span>
+            )}
+            <LinkedText text={bullet.body} links={bullet.links} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ProjectRow({ project }) {
+  return (
+    <article className="team-roster-row">
+      <div className="team-roster-meta">
+        <h2 className="team-roster-name">
+          <span className="team-roster-name-mark">{project.name}</span>
+        </h2>
+        {project.dates ? (
+          <p className="team-roster-title">{project.dates}</p>
+        ) : null}
+      </div>
+      <div className="team-roster-content">
+        {project.context ? (
+          <p className="project-context">
+            <LinkedText text={project.context} links={project.links} />
+          </p>
+        ) : null}
+        {project.roles.map((role) => (
+          <ProjectRole role={role} key={role.title} />
+        ))}
+      </div>
+    </article>
+  );
+}
+
+export function ProjectsContent({ page }) {
+  return (
+    <main className="page-body page-body-standard team-section">
+      <div className="content-lane page-body-lane team-lane">
+        <section className="team-roster" aria-label="Projects">
+          {page.items.map((project) => (
+            <ProjectRow project={project} key={project.name} />
+          ))}
+        </section>
+      </div>
+    </main>
+  );
+}
+
 export const pageBodyComponents = {
   home: HomeContent,
   about: AboutContent,
+  projects: ProjectsContent,
 };
