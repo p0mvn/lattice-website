@@ -3300,6 +3300,92 @@
     white-space: nowrap;
   }
 
+  /* Publications page — the date column grows into a meta stack
+     (date over venue) at the same 96px basis. When nested, the date's
+     own flex-basis is inert (column flex lays out vertically). */
+  .article-meta {
+    flex: 0 0 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Venue under the date — the metadata register (mono caps,
+     parchment-62), quieter than the lapis date above it. */
+  .article-venue {
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 16px;
+    text-transform: uppercase;
+  }
+
+  /* Section eyebrows (PUBLICATIONS / SPEAKING) — same mono-caps
+     register, with the hairline tie used by section eyebrows elsewhere
+     on the site. Spacing hands off between stacked sections. */
+  .publications-section + .publications-section {
+    margin-top: 56px;
+  }
+
+  .publications-eyebrow {
+    margin: 0 0 8px;
+    color: var(--parchment-62);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  .publications-eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 1px;
+    margin-right: 8px;
+    vertical-align: middle;
+    background: var(--parchment-22);
+  }
+
+  /* Linked row titles — the heading stays ink; the arrow signals the
+     destination. Hover shifts to the signal register. */
+  .article-title-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 150ms ease-out;
+  }
+
+  .article-title-link:hover {
+    color: var(--lapis);
+  }
+
+  .article-title-link:focus-visible {
+    outline: 1px solid var(--accent-gold);
+    outline-offset: 4px;
+  }
+
+  /* Extra per-row links (Announcement · Recording · …) — compact row
+     under the description, same register as the roster X/GitHub links. */
+  .article-extra-links {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 10px 0 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  .article-extra-sep {
+    color: var(--parchment-42);
+  }
+
   .article-content {
     min-width: 0;
     flex: 1;

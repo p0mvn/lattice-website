@@ -8,6 +8,7 @@ export const siteContent = {
   navItems: [
     { id: "about", label: "About", href: "/about" },
     { id: "projects", label: "Projects", href: "/projects" },
+    { id: "publications", label: "Publications", href: "/publications" },
   ],
   socialLinks: [
     { label: "Email", href: "mailto:hq@latticepq.com" },
@@ -235,6 +236,104 @@ export const pages = {
                   { text: "Hyperliquid integration", href: "https://x.com/Polaris_App/status/1930597241305358503" },
                 ],
               },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  publications: {
+    id: "publications",
+    path: "/publications",
+    documentTitle: "Publications & Speaking | Lattice",
+    title: "Publications and speaking",
+    layout: {
+      showFourthStem: true,
+      bodyWidth: "standard",
+    },
+    // Entries: date (YYYY.MM.DD for sorting + rendering), venue, title,
+    // description, optional href (row title link), optional extra links
+    // [{ label, href }] rendered under the description.
+    sections: [
+      {
+        eyebrow: "Publications",
+        items: [
+          {
+            date: "2026.04.14",
+            venue: "X",
+            title: "Spend Now, Sync Never",
+            description:
+              "Demo of addressing wallet sync scalability with Private Information Retrieval (PIR).",
+            href: "https://x.com/akhtariev/status/2044113751767691637",
+          },
+          {
+            date: "2026.03.06",
+            venue: "X",
+            title: "Why encryption alone will not protect your vote",
+            description:
+              "Trade-offs in a privacy-preserving token holder voting system.",
+            href: "https://x.com/akhtariev/status/2029990470177460237",
+          },
+          {
+            date: "2026.01.20",
+            venue: "akhtariev.ca",
+            title: "The GPU Case in Private Information Retrieval (PIR)",
+            description:
+              "Exploring how GPUs can accelerate private information retrieval (PIR) by leveraging embarrassingly parallel matrix-vector multiplication, achieving 13-174x speedups over CPU implementations.",
+            href: "https://www.akhtariev.ca/blog/pir-gpu-acceleration",
+          },
+          {
+            date: "2024.01.16",
+            venue: "Fault Tolerant",
+            title: "The Cosmos Security Handbook",
+            description:
+              "Co-authored with Alpin Yukseloglu. Security guide for Cosmos chain developers, incorporated into the official Cosmos SDK documentation with named credit; 28,000+ views on announcement.",
+            href: "https://www.faulttolerant.xyz/2024-01-16-cosmos-security-1/",
+          },
+        ],
+      },
+      {
+        eyebrow: "Speaking",
+        items: [
+          {
+            date: "2025.11.01",
+            venue: "Sovereign Day · Buenos Aires",
+            title: "Privacy and Confidentiality Fireside Chat",
+            description: "Invited fireside on confidentiality in blockchain systems.",
+            links: [
+              { label: "Announcement", href: "https://x.com/cosmos/status/1989513708104819078" },
+              { label: "Recording", href: "https://www.youtube.com/live/cjeb89EYhNQ?t=11049s" },
+              { label: "Recap", href: "https://x.com/osmosis/status/1991169279341818109" },
+            ],
+          },
+          {
+            date: "2025.05.01",
+            venue: "UCSB FifTech Blockchain Summit",
+            title: "Liquidity Wars: From Battle to Peace",
+            description: "Invited talk on liquidity dynamics across decentralized exchanges.",
+            links: [
+              { label: "Agenda", href: "https://ucsbblockchainsummit2025.com/" },
+              { label: "Recording", href: "https://www.youtube.com/watch?v=mkGBKZ-74so" },
+            ],
+          },
+          {
+            date: "2024.11.01",
+            venue: "X Spaces",
+            title: "Live Engineering Retrospective",
+            description: "Live engineering retrospective on the Polaris launch.",
+            links: [
+              { label: "Recording", href: "https://x.com/osmosis/status/1852331402928513053" },
+            ],
+          },
+          {
+            date: "2024.07.01",
+            venue: "DevMos NYC",
+            title: "Footguns in the Cosmos SDK",
+            description: "Security presentation on common Cosmos SDK pitfalls.",
+            links: [
+              { label: "Announcement", href: "https://x.com/osmosis/status/1796527720580719050" },
+              { label: "Recording", href: "https://www.youtube.com/watch?v=Zx64cWMSU4A" },
+              { label: "Agenda", href: "https://luma.com/b3zkadey" },
             ],
           },
         ],

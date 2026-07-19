@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
+import { ExternalArrow } from "./ExternalArrow";
 
 // ─────────────────────────────────────────────────────────────────────
 // HomeContent — landing page frontispiece
@@ -293,8 +294,90 @@ export function ProjectsContent({ page }) {
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// PublicationsContent — dated list of published material + talks
+//
+// Revives the Research-row pattern from the Valar design (the CSS for
+// .article-row et al. never left the stylesheet): date + venue in the
+// left gutter, title + one-line description on the right, whole row a
+// link with the external-arrow glyph.
+// ─────────────────────────────────────────────────────────────────────
+
+function PublicationRow({ item }) {
+  // Data stays ASCII (2026.01.01) for portability + the `dateTime`
+  // attribute gets ISO format; rendered text uses middle dots, the
+  // printerly convention.
+  return (
+    <div className="article-row">
+      <div className="article-meta">
+        <time className="article-date" dateTime={item.date.replaceAll(".", "-")}>
+          {item.date.replaceAll(".", "·")}
+        </time>
+        {item.venue ? <span className="article-venue">{item.venue}</span> : null}
+      </div>
+      <div className="article-content">
+        <div className="article-heading">
+          <h2>
+            {item.href ? (
+              <a
+                className="article-title-link"
+                href={item.href}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {item.title}
+                <ExternalArrow />
+              </a>
+            ) : (
+              item.title
+            )}
+          </h2>
+        </div>
+        <p>{item.description}</p>
+        {item.links?.length ? (
+          <p className="article-extra-links">
+            {item.links.map((link, i) => (
+              <Fragment key={link.label}>
+                <a
+                  className="project-link"
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {link.label}
+                </a>
+                {i < item.links.length - 1 ? (
+                  <span className="article-extra-sep" aria-hidden="true">·</span>
+                ) : null}
+              </Fragment>
+            ))}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function PublicationsContent({ page }) {
+  return (
+    <main className="page-body page-body-standard">
+      <div className="content-lane page-body-lane article-lane">
+        {page.sections.map((section) => (
+          <section className="publications-section" key={section.eyebrow}>
+            <p className="publications-eyebrow">{section.eyebrow}</p>
+            {section.items.map((item) => (
+              <PublicationRow key={`${item.date}-${item.title}`} item={item} />
+            ))}
+          </section>
+        ))}
+      </div>
+    </main>
+  );
+}
+
 export const pageBodyComponents = {
   home: HomeContent,
   about: AboutContent,
   projects: ProjectsContent,
+  publications: PublicationsContent,
 };
