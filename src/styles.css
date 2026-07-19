@@ -208,7 +208,7 @@
     --frame-margin: 48px;
     --sidebar-seam: 160px;
     --sidebar-column-width: calc(var(--sidebar-seam) - var(--frame-margin));
-    --footer-height: 112px;
+    --footer-height: 144px;
     /* Default top breathing space, also used as the symmetric bottom
        page-end-space (footer area). Non-home pages override this to
        144px below so page titles align with the V logo's vertical
@@ -299,7 +299,7 @@
        a sibling of the frame, so mirror the value it needs here
        (tracks .page-frame's declaration). The parchment tokens no
        longer need mirroring — they live on :root now. */
-    --footer-height: 112px;
+    --footer-height: 144px;
     background: var(--vellum);
     box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.35);
   }
@@ -3432,7 +3432,7 @@
        the page's top and bottom rules read at the same weight. */
     border-top: 1px solid var(--parchment-20);
     background: var(--vellum);
-    padding: 24px var(--frame-margin) 28px;
+    padding: 28px var(--frame-margin) 40px;
   }
 
   .footer-brand {

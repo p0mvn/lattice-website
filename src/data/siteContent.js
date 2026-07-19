@@ -44,8 +44,7 @@ export const pages = {
       // that width; a materially longer string overflows the column.
       positioning: "Blockchains, built to scale.",
       colophonLead: "Lattice LLC",
-      colophon: " is the protocol engineering practice of Roman Akhtariev.",
-      colophonSecond: "Building core infrastructure across Zcash and Cosmos.",
+      colophon: " is a specialized blockchain protocol engineering practice advancing core infrastructure across the Zcash and Cosmos ecosystems.",
     },
   },
   about: {
@@ -54,7 +53,7 @@ export const pages = {
     documentTitle: "About | Lattice",
     title: "Core infrastructure for production blockchain networks",
     intro:
-      "Lattice is a protocol engineering practice led by Roman Akhtariev, working across the Cosmos and Zcash ecosystems. In collaboration with Valar Group, Lattice engineers build and scale core blockchain infrastructure — consensus, storage, wallets, and governance.",
+      "Lattice is a protocol engineering practice led by Roman Akhtariev, working across the Cosmos and Zcash ecosystems. Key contributor to Valar Group, Lattice builds and scales core blockchain infrastructure — consensus, storage, wallets, and governance.",
     layout: {
       showFourthStem: true,
       bodyWidth: "standard",
@@ -100,6 +99,36 @@ export const pages = {
     // left meta column, context + roles + evidence bullets on the right.
     // "(reference)" markers are placeholders for citation links.
     items: [
+      {
+        name: "Valar Group",
+        dates: "2026 – Present",
+        context: "Research and engineering lab developing the Zcash protocol.",
+        links: [
+          { text: "Zcash protocol", href: "https://valargroup.dev" },
+        ],
+        roles: [
+          {
+            bullets: [
+              {
+                lead: "Leading applied research on Private Information Retrieval (PIR)",
+                body: " — replacing per-transaction trial decryption in wallet sync with targeted retrieval. Targets an order-of-magnitude faster sync, with no weakening of cryptographic guarantees.",
+              },
+              {
+                lead: "Designed and implemented token-holder voting",
+                body: " — private, verifiable on-chain governance for Zcash, combining distributed key generation, threshold encryption, and zero-knowledge circuits in a production system.",
+              },
+              {
+                lead: "Implemented high-performance node software for encrypted blockchain systems",
+                body: " — as Principal Engineer on the Zakura core team: removed the CPU bottleneck of Zakura sync (nearly 5× faster chain sync than other Zcash full nodes) and contributed to a redesigned peer-to-peer networking stack.",
+                links: [
+                  { text: "Principal Engineer", href: "https://zakura.com/about/" },
+                  { text: "Zakura sync", href: "https://zakura.com/" },
+                ],
+              },
+            ],
+          },
+        ],
+      },
       {
         name: "Osmosis",
         dates: "2022 – Present",
